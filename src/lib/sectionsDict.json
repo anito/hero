@@ -1,0 +1,59 @@
+[
+  {
+    "id": 0,
+    "link": "/#reifen",
+    "name": "Reifenservice",
+    "href": "tires@512x.png",
+    "lines": []
+  },
+  {
+    "id": 1,
+    "link": "/",
+    "name": "Ersatzteile",
+    "href": "engine@512x.png",
+    "lines": [],
+    "y": 10
+  },
+  {
+    "id": 2,
+    "link": "/werkstatt",
+    "name": "Werkstatt",
+    "href": "garage@512x.png",
+    "lines": []
+  },
+  {
+    "id": 3,
+    "link": "/product-categories/mieten",
+    "name": "Ausleihen",
+    "href": "rent@512x.png",
+    "lines": []
+  },
+  {
+    "id": 4,
+    "link": "/showroom",
+    "name": "Angebote",
+    "href": "tractor@512x.png",
+    "lines": []
+  },
+  {
+    "id": 5,
+    "link": "/#neuwagen",
+    "name": "Neuwagen",
+    "href": "oldnew@512x.png",
+    "lines": []
+  },
+  {
+    "id": 6,
+    "link": "/#tym",
+    "name": "TYM - Werksvertretung",
+    "href": "tym@512x.png",
+    "lines": []
+  },
+  {
+    "id": 7,
+    "link": "/#towing",
+    "name": "Abschleppservice",
+    "href": "towing@512x.png",
+    "lines": []
+  }
+]

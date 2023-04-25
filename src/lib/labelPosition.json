@@ -1,0 +1,56 @@
+[
+  {
+    "min": 338,
+    "max": 359,
+    "xPercent": 150,
+    "yPercent": -50
+  },
+  {
+    "min": 0,
+    "max": 22,
+    "xPercent": 50,
+    "yPercent": -50
+  },
+  {
+    "min": 23,
+    "max": 67,
+    "xPercent": 50,
+    "yPercent": 70
+  },
+  {
+    "min": 68,
+    "max": 112,
+    "xPercent": -50,
+    "yPercent": 250
+  },
+  {
+    "min": 113,
+    "max": 157,
+    "xPercent": -150,
+    "yPercent": 70
+  },
+  {
+    "min": 158,
+    "max": 202,
+    "xPercent": -150,
+    "yPercent": -50
+  },
+  {
+    "min": 203,
+    "max": 247,
+    "xPercent": -150,
+    "yPercent": -170
+  },
+  {
+    "min": 248,
+    "max": 292,
+    "xPercent": -50,
+    "yPercent": -350
+  },
+  {
+    "min": 293,
+    "max": 337,
+    "xPercent": 50,
+    "yPercent": -170
+  }
+]
