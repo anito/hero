@@ -10,7 +10,7 @@
       width: 33%;;
       margin-right: 33%;
       margin-left: 33%;
-      margin-top: 18%;
+      top: calc(50% - 180px);
       z-index: 1;
       visibility: hidden;
       -webkit-transform: translateZ(0);
@@ -60,7 +60,7 @@
       }
       .section-inner {
         width: 100%;
-        height: 100%;
+        height: 360px;
         display: flex;
         justify-content: center;
         .slider-button {
