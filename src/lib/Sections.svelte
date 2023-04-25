@@ -1,16 +1,6 @@
-<script lang="ts">
-  import { onMount } from 'svelte';
-
-  let style;
-  let main;
-
-  onMount(() => {
-    style = document.defaultView.getComputedStyle(main).backgroundImage;
-  });
-</script>
-
-<main bind:this={main}>
+<main>
   <section data-section="0">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -29,6 +19,7 @@
     </div>
   </section>
   <section data-section="1">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -40,7 +31,7 @@
             Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
             invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
             accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata
-            sanctus est Lorem ipsum dolor sit amet. 
+            sanctus est Lorem ipsum dolor sit amet.
           </p>
           <a class="read-more" href="#ersatzteile" target="_self" role="button">Mehr erfahren</a>
         </div>
@@ -48,6 +39,7 @@
     </div>
   </section>
   <section data-section="2">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -60,6 +52,7 @@
     </div>
   </section>
   <section data-section="3">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -71,7 +64,7 @@
             Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
             invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
             accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata
-            sanctus est Lorem ipsum dolor sit amet. 
+            sanctus est Lorem ipsum dolor sit amet.
           </p>
           <a class="read-more" href="/product-category/mieten/" target="_self" role="button"
             >Mehr erfahren</a
@@ -81,25 +74,25 @@
     </div>
   </section>
   <section data-section="4">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
           <div class="lineTxt">Angebote</div>
         </h1>
         <div class="content">
-          <p>Lorem ipsum dolor sit amet <em>gubergren</em></p>
+          <p>Nutzfahrzeuge und Zubehör</p>
           <p class="line">
-            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-            invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
-            accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata
-            sanctus est Lorem ipsum dolor sit amet.
+            Wählen Sie aus zahlreichen Fahrzeugen und Geräten rund um Garten, Hof und Landwirtschaft.
+            Wir haben definitiv das passende Angebot für Sie.
           </p>
-          <a class="read-more" href="/showromm/" target="_self" role="button">Mehr erfahren</a>
+          <a class="read-more" href="/showroom/" target="_self" role="button">Angebote ansehen</a>
         </div>
       </div>
     </div>
   </section>
   <section data-section="5">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -119,6 +112,7 @@
     </div>
   </section>
   <section data-section="6">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
@@ -137,17 +131,20 @@
     </div>
   </section>
   <section data-section="7">
+    <div class="close" />
     <div class="section-inner">
       <div class="align-center">
         <h1>
-          <div class="lineTxt">Abschlepp-</div>
-          <div class="lineTxt">service</div>
+          <div class="lineTxt">Schlepphilfe</div>
+          <div class="lineTxt">& Bergung</div>
         </h1>
         <div class="content">
-          <p>Lorem ipsum dolor sit amet <em>gubergren</em></p>
+          <p>Unser Abschleppservice</p>
           <p class="line">
-            At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no
-            sea takimata sanctus est Lorem ipsum dolor sit amet. 
+            Sie haben mit Ihrem Fahrzeug eine Panne oder einen Unfall? Wir
+            haben für Sie die Lösung. Wir schleppen Sie vom Schadenort, also auch ab der Haustüre,
+            in die nächste geeignete Werkstatt bzw. Fachwerkstatt, oder zu einem von Ihnen
+            gewünschten Ort.
           </p>
         </div>
       </div>

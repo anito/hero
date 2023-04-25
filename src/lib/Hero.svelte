@@ -87,6 +87,7 @@
     MotionPathPlugin.convertToPath('.c1_line');
     initImages();
     initSections();
+    initCloseAction();
     resize();
     start();
     menuTl.play().then(() => playMode(1));
@@ -108,7 +109,7 @@
     }, 10);
 
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(animateHeader, 1000);
+    timeoutId = setTimeout(showSection, 1000);
   }
 
   function initImages() {
@@ -241,47 +242,53 @@
 
   function clickStageHandler(e) {
     wobble();
-    gsap.to(menuItems, {
-      scale: 1,
-    });
-    const active = activate();
-
-    inOut('.menu-item-label, .brand', 1);
-    navmodeId = null;
-    animateHeader();
-    setTimeout(() => playMode(1), 1000);
+    deactivate();
   }
 
-  const activate = (item?: SVGGElement, force?: boolean) => {
+  const setMenuClasses = (item?: SVGGElement, force?: boolean) => {
     const activeMenus = menuItems3d.filter((itm) =>
       item === itm
         ? 'boolean' === typeof force
           ? itm.classList.toggle('menu-open', force)
           : itm.classList.toggle('menu-open')
-        : itm.classList.remove('menu-open'))
+        : itm.classList.remove('menu-open')
+    );
 
     return app.classList.toggle('menu-open', 0 < activeMenus.length);
   };
 
+  const activate = () => {
+    inOut('.menu-item-label, .brand', 0);
+    playMode(2);
+    centerStage();
+  };
+
+  const deactivate = () => {
+    gsap.to(menuItems, {
+      scale: 1
+    });
+    setMenuClasses();
+    inOut('.menu-item-label, .brand', 1);
+    navmodeId = null;
+    showSection();
+    setTimeout(() => playMode(1), 1000);
+  };
+
   function clickSectionHandler(e: MouseEvent) {
     e.stopPropagation();
-    e.preventDefault()
+    e.preventDefault();
 
     const target = e.currentTarget as unknown as SVGGElement;
-    const active = activate(target);
-    navmodeId = active ? target.dataset.id : null
+    const active = setMenuClasses(target);
+    navmodeId = active ? target.dataset.id : null;
     gsap.to(menuItems, {
       scale: (i, me: SVGGElement) => (me.parentElement.classList.contains('menu-open') ? 1.25 : 1)
     });
-    animateHeader();
+    showSection();
     if (active) {
-      inOut('.menu-item-label, .brand', 0);
-      playMode(2);
-      centerStage();
+      activate();
     } else {
-      inOut('.menu-item-label, .brand', 1);
-      // Wait a bit for the text to fade out
-      setTimeout(() => playMode(1), 1000);
+      deactivate();
     }
 
     dispatch('click:menu-item', { type: 'menu-item', data: navmodeId });
@@ -349,6 +356,13 @@
     }
   }
 
+  function initCloseAction() {
+    $sections.forEach((section) => {
+      const closeBtn = section.element.querySelector('.close');
+      closeBtn.addEventListener('click', deactivate);
+    });
+  }
+
   function initSections() {
     for (
       let nodes = document.querySelectorAll('section[data-section]'), i = 0;
@@ -385,7 +399,7 @@
     section.lines.reverse();
   }
 
-  function animateHeader() {
+  function showSection() {
     textTl?.clear();
     let playhead = 0;
 
@@ -668,7 +682,7 @@
           on:mouseenter:brand={brandTl.pause()}
           on:mouseleave:brand={brandTl.play()}
           index="0"
-          opacity={'random'}
+          opacity={0.5}
           useFx
         />
       </g>
@@ -678,7 +692,7 @@
           on:mouseenter:brand={brandTl.pause()}
           on:mouseleave:brand={brandTl.play()}
           index="1"
-          opacity={'random'}
+          opacity={0.5}
           useFx
         />
       </g>
@@ -700,7 +714,7 @@
           on:mouseenter:brand={brandTl.pause()}
           on:mouseleave:brand={brandTl.play()}
           index="2"
-          opacity={'random'}
+          opacity={0.5}
           useFx
         />
       </g>
@@ -710,7 +724,7 @@
           on:mouseenter:brand={brandTl.pause()}
           on:mouseleave:brand={brandTl.play()}
           index="3"
-          opacity={'random'}
+          opacity={0.5}
           useFx
         />
       </g>
@@ -720,7 +734,7 @@
           on:mouseenter:brand={brandTl.pause()}
           on:mouseleave:brand={brandTl.play()}
           index="4"
-          opacity={'random'}
+          opacity={0.5}
           useFx
         />
       </g>
@@ -781,9 +795,11 @@
       outline: none;
     }
     .menu-item-3d {
-      &.menu-open .menu-item,
-      &.menu-open .menu-item circle {
+      &.menu-open .menu-item {
         opacity: 1 !important;
+      }
+      &.menu-open .menu-item circle {
+        opacity: .8 !important;
       }
       .menu-item {
         transition: opacity 0.3s ease-in-out;

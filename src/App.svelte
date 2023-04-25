@@ -1,10 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Icons from './lib/Icons.svelte';
-  import SecondCol from './lib/SecondCol.svelte';
-  import Widget from './lib/Widget.svelte';
-  import GsapHero from './lib/GsapHero.svelte';
-  import { app_url, stylesheet_url } from './lib/utils';
+  import Sections from './lib/Sections.svelte';
+  import Hero from './lib/Hero.svelte';
+  import { app_url } from './lib/utils';
 
   onMount(() => {});
 
@@ -16,9 +15,9 @@
 
 <Icons />
 
-<SecondCol --background={`url(${app_url}background.jpg)`}>
-  <GsapHero on:click:menu-item={clickHandler} on:click:brand={clickHandler} />
-</SecondCol>
+<Sections --background={`url(${app_url}background.jpg)`} --close={`url(${app_url}close.svg`}>
+  <Hero on:click:menu-item={clickHandler} on:click:brand={clickHandler} />
+</Sections>
 
 <style lang="scss">
   :root {

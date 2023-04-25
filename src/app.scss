@@ -1,5 +1,4 @@
 #app {
-
   main {
     height: 100%;
     width: 100%;
@@ -7,7 +6,7 @@
     section {
       position: absolute;
       height: auto;
-      width: 33%;;
+      width: 33%;
       margin-right: 33%;
       margin-left: 33%;
       top: calc(50% - 180px);
@@ -19,6 +18,7 @@
       font-family: 'canada-type-gibson';
       h1 {
         font-family: 'good-times';
+        margin-bottom: 20px;
         font-size: 1.3em;
         color: #eaead4;
       }
@@ -38,7 +38,7 @@
           &.line {
             display: inline-block;
             margin-top: 20px;
-            line-height: 1em;
+            line-height: 1.5em;
             font-size: 1em;
           }
         }
@@ -88,6 +88,30 @@
           transform: translateZ(0);
         }
       }
+      .close {
+        position: absolute;
+        right: 0;
+        top: -50px;
+        width: 80px;
+        height: 20px;
+        visibility: hidden;
+        cursor: pointer;
+        &::after {
+          content: '';
+          display: block;
+          width: 100%;
+          height: 100%;
+          padding: 3px;
+          position: absolute;
+          background-image: var(--close);
+          background-position: center center;
+          background-repeat: no-repeat;
+          z-index: 2;
+          outline: none;
+          cursor: pointer;
+          opacity: 0.8;
+        }
+      }
     }
     section.textActive .content p,
     section.textActive .content a.read-more,
@@ -101,14 +125,14 @@
       -webkit-transform: translateZ(0);
       transform: translateZ(0);
     }
-  
+
     section.textActive .content p:first-child,
     section.textActive .downloads:first-child,
     section.textActive .slider-buttons:first-child,
     section.textActive .slider:first-child {
       transition-delay: 0.3s;
     }
-  
+
     section.textActive .content p:last-child,
     section.textActive .content a:last-child,
     section.textActive .downloads:last-child,
@@ -116,12 +140,12 @@
     section.textActive .slider:last-child {
       transition-delay: 0.2s;
     }
-  
+
     section.textActive .pre-footer {
       transition: opacity 0.9s ease;
       opacity: 1;
     }
-  
+
     section.textNotActive .content p,
     section.textNotActive .content a.read-more,
     section.textNotActive .downloads,
@@ -134,12 +158,12 @@
       -webkit-transform: translate3d(0, 15px, 0);
       transform: translate3d(0, 15px, 0);
     }
-  
+
     section.textNotActive .pre-footer {
       transition: opacity 0.4s ease;
       opacity: 0;
     }
-  
+
     section.textNotActive .content p,
     section.textNotActive .content a.read-more,
     section.textNotActive .downloads,
@@ -148,7 +172,7 @@
       -webkit-transform: translate3d(0, 30px, 0);
       transform: translate3d(0, 30px, 0);
     }
-  
+
     section.textActive .content p,
     section.textActive .content a.read-more,
     section.textActive .downloads,
@@ -161,14 +185,14 @@
       -webkit-transform: translateZ(0);
       transform: translateZ(0);
     }
-  
+
     section.textActive .content p:first-child,
     section.textActive .downloads:first-child,
     section.textActive .slider-buttons:first-child,
     section.textActive .slider:first-child {
       transition-delay: 0.3s;
     }
-  
+
     section.textActive .content p:last-child,
     section.textActive .downloads:last-child,
     section.textActive .slider-buttons:last-child,
@@ -190,6 +214,9 @@
   }
   &.menu-open main::after {
     opacity: 0.6;
+  }
+  &.menu-open .close {
+    visibility: visible;
   }
 }
 

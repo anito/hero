@@ -9,7 +9,7 @@
   export let useFx = false;
 
   const dispatch = createEventDispatcher();
-  const r = Math.random() * 10 + 15
+  const r = Math.random() * 10 + 15;
 
   let useUrl: string;
   let pendingDeactivation = false;
@@ -23,6 +23,7 @@
   $: or = r + 2;
   $: size = r * 2;
   $: brand = $loadedBrands[index];
+  $: href = brand  && `/brands/${brand.slug}`
   $: url = brand?.image_url;
   $: useFx ? fxOut() : url === useUrl;
   $: useFx ? fxIn(url) : (useUrl = url);
@@ -98,19 +99,37 @@
     in:scale={{ duration: 1000, delay: 500, easing: elasticOut }}
     style:--opacity={opc}
   >
-    <g class="bg-wrapper" bind:this={bgEl} id={elementId}>
-      <circle class="outer" cx="0" cy="0" fill="none" r={or} />
-      <circle class="inner" cx="0" cy="0" fill="#fff" {r} />
+    <g class="tooltip">
+      <rect
+        x=".5"
+        y=".5"
+        width="70"
+        height="12"
+        rx="6"
+        fill="#000"
+        stroke-miterlimit="10"
+      />
+      <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
+        <tspan stroke-width="0" x="35" dy="8.5" style="font-size: .4em">
+          Produkte zeigen
+        </tspan>
+      </text>
     </g>
-    <image
-      id="image-{elementId}"
-      href={useUrl}
-      mask="url(#{elementId}-mask)"
-      x={-r}
-      y={-r}
-      width={size}
-      height={size}
-    />
+    <a href="{href}">
+      <g class="bg-wrapper" bind:this={bgEl} id={elementId}>
+        <circle class="outer" cx="0" cy="0" fill="none" r={or} />
+        <circle class="inner" cx="0" cy="0" fill="#fff" {r} />
+      </g>
+      <image
+        id="image-{elementId}"
+        href={useUrl}
+        mask="url(#{elementId}-mask)"
+        x={-r}
+        y={-r}
+        width={size}
+        height={size}
+      />
+    </a>
   </g>
 {/if}
 
@@ -124,24 +143,34 @@
   </symbol>
 </svg>
 
-<style>
+<style lang="scss">
   .image-wrapper {
     opacity: var(--opacity);
-    transition: all 0.3s ease-out;
-  }
-  .image-wrapper:hover {
     cursor: pointer;
+    transition: all 0.3s ease-out;
+    .outer,
+    .inner {
+      stroke: #fff;
+      stroke-width: 1;
+      transition: all 0.2s ease-in-out;
+    }
+    .inner {
+      stroke-width: 0;
+    }
+    &:hover {
+      opacity: 1;
+    }
+    &:hover .inner {
+      stroke-width: 12;
+    }
+    &:hover .tooltip {
+    transition-delay: .5s;
+    opacity: 1;
+    }
   }
-  .image-wrapper .outer,
-  .image-wrapper .inner {
-    stroke: #fff;
-    stroke-width: 1;
-    transition: all 0.2s ease-in-out;
-  }
-  .image-wrapper .inner {
-    stroke-width: 0;
-  }
-  .image-wrapper:hover .inner {
-    stroke-width: 12;
+  .tooltip {
+    opacity: 0;
+    transform: translate(-35px, -45px);
+    transition: all .3s easin-out;
   }
 </style>
