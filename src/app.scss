@@ -5,8 +5,8 @@
     position: absolute;
     section {
       position: absolute;
-      height: auto;
-      width: 33%;
+      height: 360px;
+      width: 34%;
       margin-right: 33%;
       margin-left: 33%;
       top: calc(50% - 180px);
@@ -26,11 +26,12 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        height: 300px;
         max-height: 300px;
         p {
           font-weight: 300;
           font-size: 1.2em;
+          line-height: 1.5em;
+          min-height: 30px;
         }
         p,
         a.read-more {
@@ -39,6 +40,7 @@
           transform: translate3d(0, -15px, 0);
           &.line {
             display: inline-block;
+            overflow: auto;
             margin-top: 20px;
             line-height: 1.5em;
             font-weight: 100;
@@ -64,6 +66,7 @@
       .section-inner {
         width: 100%;
         height: 360px;
+        padding: 0 20px;
         display: flex;
         justify-content: center;
         .slider-button {
@@ -223,8 +226,8 @@
   }
 }
 
-@media screen and (min-width: 860px) {
-  #app main section .content .line {
-    display: flex;
+@media screen and (max-width: 860px) {
+  #app main section.textActive .content .line {
+    display: none;
   }
 }
