@@ -15,7 +15,7 @@
 
 <Icons />
 
-<Sections --background={`url(${app_url}background.jpg)`} --close={`url(${app_url}close.svg`}>
+<Sections --background={`url(${app_url}background.jpg)`} --close={`url(${app_url}close.svg`} --circle="transparent">
   <Hero on:click:menu-item={clickHandler} on:click:brand={clickHandler} />
 </Sections>
 

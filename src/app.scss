@@ -28,17 +28,20 @@
         justify-content: flex-start;
         height: 300px;
         max-height: 300px;
+        p {
+          font-weight: 300;
+          font-size: 1.2em;
+        }
         p,
         a.read-more {
           opacity: 0;
           -webkit-transform: translate3d(0, -15px, 0);
           transform: translate3d(0, -15px, 0);
-          font-weight: 100;
-          font-size: 1.1em;
           &.line {
             display: inline-block;
             margin-top: 20px;
             line-height: 1.5em;
+            font-weight: 100;
             font-size: 1em;
           }
         }

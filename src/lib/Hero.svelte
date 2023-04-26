@@ -47,7 +47,10 @@
   let tracks: SVGPathElement[];
   let menuItems3d: SVGGElement[];
   let menuItems: SVGGElement[];
+  let menuImages: SVGImageElement[];
   let splitTextTimeoutId;
+  let userInactiveId;
+  let userInput = false;
   let timeoutId;
   let navmodeId;
   let width;
@@ -60,9 +63,6 @@
   let brandTl;
 
   const now = () => new Date().getTime();
-  const elapsed = (label = '') => {
-    // console.log(label, Number.parseFloat(((now() - _t) / 1000).toString()).toFixed(2));
-  };
 
   $: _t = now();
   $: activeDisplayMode = menuDict[i % menuDict.length];
@@ -70,9 +70,9 @@
   $: cx = width / 2;
   $: cy = height / 2;
   $: $brands.length && loadBrandImages();
+  $: userInput && clearInterval(userInactiveId)
 
   onMount(async () => {
-    elapsed('onMount');
     app = document.getElementById('app');
     window.addEventListener('resize', resize);
     main1 = document.getElementById('main1');
@@ -81,6 +81,7 @@
 
     m1_cGroup = document.querySelectorAll('.m1_cGroup') as unknown as SVGGElement[];
     tracks = gsap.utils.toArray('.track') as unknown as SVGPathElement[];
+    menuImages = gsap.utils.toArray('.menu-item-image') as unknown as SVGImageElement[];
     menuItems = gsap.utils.toArray('.menu-item') as unknown as SVGGElement[];
     menuItems3d = gsap.utils.toArray('.menu-item-3d') as unknown as SVGGElement[];
 
@@ -91,6 +92,7 @@
     resize();
     start();
     menuTl.play().then(() => playMode(1));
+    userInactiveId = setInterval(wobble, 20000);
 
     // don't await
     fetchData('wbp_brands').then((res) => ($brands = res.brands));
@@ -215,7 +217,6 @@
     });
 
     gsap.set(menuItem3d, {
-      onComplete: () => elapsed('set onrotationstart complete'),
       x: '+=' + x,
       y: '+=' + y
     });
@@ -240,7 +241,8 @@
     });
   }
 
-  function clickStageHandler(e) {
+  function clickStageHandler(e) {;
+    userInput = true;
     wobble();
     deactivate();
   }
@@ -264,7 +266,7 @@
   };
 
   const deactivate = () => {
-    gsap.to(menuItems, {
+    gsap.to(menuImages, {
       scale: 1
     });
     setMenuClasses();
@@ -277,12 +279,13 @@
   function clickSectionHandler(e: MouseEvent) {
     e.stopPropagation();
     e.preventDefault();
+    userInput = true;
 
     const target = e.currentTarget as unknown as SVGGElement;
     const active = setMenuClasses(target);
     navmodeId = active ? target.dataset.id : null;
-    gsap.to(menuItems, {
-      scale: (i, me: SVGGElement) => (me.parentElement.classList.contains('menu-open') ? 1.25 : 1)
+    gsap.to(menuImages, {
+      scale: (i, me: SVGGElement) => (me.closest('.menu-item-3d').classList.contains('menu-open') ? 1.4 : 1)
     });
     showSection();
     if (active) {
@@ -309,7 +312,7 @@
     const target = e.target as unknown as HTMLElement;
     const image = target.parentElement.querySelector('image');
     gsap.to(image, {
-      scale: 1,
+      scale: (i, me: SVGGElement) => (me.closest('.menu-item-3d').classList.contains('menu-open') ? 1.4 : 1),
       onComplete: () => target.removeEventListener('mouseleave', mouseleaveHandler)
     });
   }
@@ -321,8 +324,8 @@
     const dy = e.clientY - top - cy;
 
     gsap.to('.m1_cGroup', {
-      x: (i) => -dx * (i + 1) * 0.008,
-      y: (i) => -dy * (i + 1) * 0.008,
+      x: (i) => -dx * (i + 1) * 0.003,
+      y: (i) => -dy * (i + 1) * 0.003,
       rotation: Math.random() * 0.2,
       duration: 1.5
     });
@@ -346,6 +349,7 @@
   function wobble() {
     if (gsap.getProperty('.m1_cGroup', 'scale') != 1) return; //prevent overlapping bouncy tweens
     if (app.classList.contains('menu-open')) return;
+    clearInterval
 
     for (var i = 0; i < m1_cGroup.length; i++) {
       gsap.fromTo(
@@ -476,8 +480,6 @@
   }
 
   function start() {
-    elapsed('start');
-
     gsap.set(menuItems, {
       transformOrigin: '50% 50%'
     });
@@ -502,13 +504,11 @@
             onUpdate: trackOnUpdateHandler,
             onComplete: trackOnCompleteRotationHandler
           },
-          onComplete: () => elapsed('to rotation complete'),
           duration: 0
         },
         0
       )
-      .to('#stage', { opacity: 1, duration: 0.5 }, 0)
-      .add(() => elapsed('end of timeline'));
+      .to('#stage', { opacity: 1, duration: .5 }, 0)
 
     textTl = gsap.timeline({
       paused: true
@@ -611,11 +611,11 @@
 <svg id="main1" class={activeDisplayMode} width="100%" height="100%" viewBox="-400 -300 800 600">
   <symbol>
     <defs>
-      <linearGradient id="grad1" x1="50%" y1="50%" x2="50%" y2="100%">
+      <linearGradient id="grad_1" x1="50%" y1="50%" x2="50%" y2="100%">
         <stop offset="10%" style="stop-color: var(--grd1-stop1); stop-opacity: 0.4" />
         <stop offset="99%" style="stop-color: var(--grd1-stop2); stop-opacity: 0.1" />
       </linearGradient>
-      <linearGradient id="grad2" x1="50%" y1="0%" x2="50%" y2="100%">
+      <linearGradient id="grad_2" x1="50%" y1="0%" x2="50%" y2="100%">
         <stop offset="25%" style="stop-color: var(--grd2-stop1); stop-opacity: 0.1" />
         <stop offset="99%" style="stop-color: var(--grd2-stop2); stop-opacity: 0.2" />
       </linearGradient>
@@ -770,9 +770,9 @@
                 cx="0"
                 cy="0"
                 r="40"
-                fill="#ffffff"
+                fill="var(--circle)"
                 stroke="#ffffff"
-                stroke-width="1"
+                stroke-width="0"
               />
               <image class="menu-item-image" {y} href={app_url.concat(href)} />
             </g>
