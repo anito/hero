@@ -83,6 +83,7 @@
       font-family: 'canada-type-gibson';
       &.active {
         visibility: visible;
+        z-index: 999;
         .title > div {
           line-height: 1em;
           &:last-child {
