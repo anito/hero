@@ -5,15 +5,20 @@ export interface Brand {
 };
 
 export interface Section {
-  id?: string | number;
+  id?: number;
   href?: string;
-  link?: string;
   name?: string;
+  x?: number;
   y?: number;
   element?: HTMLElement;
   title?: HTMLHeadingElement;
   active?: boolean;
   lines?: HTMLElement[];
+}
+
+export interface HeaderSection extends Section {
+  icon?: SVGGElement;
+  track?: SVGPathElement;
 }
 
 export interface SectionDict {

@@ -4,6 +4,7 @@
   import { gsap } from 'gsap';
   import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
   import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+  import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
   import SVGTextfield from './SVGTextfield.svelte';
   import { fetchData, hide, use } from './utils';
 
@@ -11,32 +12,56 @@
 
   const categoriesBaseUrl = '/product-categories/';
   const textfields: Set<{ id: string; element: SVGGElement }> = new Set();
-
+  
   let ajaxurl: string;
-  let is_active_categories = false;
-  let wrapperEl;
-
+  let svg;
+  let lightLogogroup;
+  let lightLogogroups;
+  let theBackground;
+  
   $: categories = fetchData('wbp_product_categories').then((res) => res.cats);
   // $: content = fetchData('wbp_remote');
 
   onMount(() => {
-    init();
     ajaxurl = globalThis.ajaxurl;
+
+    theBackground = document.getElementById('the-background');
+    lightLogogroup = document.getElementById('use-light-logo-group');
+    lightLogogroups = document.querySelectorAll('.light-logo-group');
+
     window.addEventListener('animation:init', start);
+    start();
   });
 
-  function init() {
-    initElements();
-    start();
-  }
-
   function initElements() {
-    gsap.set('.stroke', { drawSVG: 0, stroke: 'var(--dark)' });
+    console.log('init');
+    gsap.set('.stroke', { drawSVG: 0, stroke: 'var(--dark-blue)' });
+    gsap.set('#the-type', {
+      xPercent: -50,
+      yPercent: -50
+    });
+    gsap.set(
+      [
+        '#use-light-logo-group',
+        '#use-light-logo-group-1',
+        '#use-light-logo-group-2',
+        '#use-light-logo-group-3',
+        '#use-light-logo-group-4',
+        '#use-light-logo-group-5',
+        '#use-light-logo-group-6',
+        '#use-light-logo-group-7',
+        '#use-light-logo-group-8'
+      ],
+      {
+        xPercent: -50,
+        yPercent: -50,
+        transformOrigin: '50% 50%'
+      }
+    );
     MorphSVGPlugin.convertToPath('#circle');
   }
 
   function start() {
-    use('#use-grind, #use-type', { opacity: 0 });
     use('#use-art-type-masked, #use-art-grind-masked', {
       strokeWidth: 30,
       xPercent: -50,
@@ -49,63 +74,57 @@
         defaults: { ease: 'none' },
         repeat: 0,
         repeatDelay: 2,
-        paused: false
+        paused: false,
+        onStart: () => initElements()
       })
       .to('#the-grind', {
         drawSVG: true,
         ease: 'power2.inout',
-        duration: 1.3
+        duration: 0.5
       })
-      .fromTo(
-        '#the-type',
-        {
-          xPercent: -50,
-          yPercent: -50
-        },
-        {
-          drawSVG: true,
-          ease: 'power2.inout',
-          duration: 1
-        }
-      )
-      .to('#use-art-grind-masked, #use-art-type-masked', {
-        opacity: 0,
-        duration: 0.3
+      .to('#the-type', {
+        drawSVG: true,
+        duration: 0.5
       })
-      .add(() => hide('#use-art-grind-masked, #use-art-type-masked'))
-      .add(() => use('#use-logo-grind, #use-logo-type'))
-      .fromTo(
-        '#use-logo-grind',
+      .to(
+        '#use-art-grind-masked, #use-art-type-masked',
         {
-          fill: 'var(--dark)',
-          strokeWidth: 0,
-          xPercent: -50,
-          yPercent: -50
-        },
-        {
-          opacity: 1,
-          duration: 0.3
-        },
-        '<'
-      )
-      .fromTo(
-        '#use-logo-type',
-        {
-          fill: 'var(--white)',
-          strokeWidth: 0,
-          xPercent: -50,
-          yPercent: -50,
           opacity: 0,
-          scale: 1.5
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          ease: 'elastic.out(1, 0.35)',
           duration: 0.5
         },
-        '<+=.5'
+        'fade'
       )
+      .add(() => hide('#use-art-grind-masked, #use-art-type-masked'))
+      // .fromTo(
+      //   '#use-logo-grind, #use-logo-type',
+      //   {
+      //     opacity: 0,
+      //     fill: 'var(--dark-blue)',
+      //     strokeWidth: 0,
+      //     xPercent: -50,
+      //     yPercent: -50
+      //   },
+      //   {
+      //     opacity: 1,
+      //     duration: 0.5
+      //   },
+      //   'fade'
+      // )
+      // .fromTo(
+      //   '#use-logo-type',
+      //   {
+      //     opacity: 0,
+      //     fill: 'var(--white)',
+      //     strokeWidth: 0,
+      //     xPercent: -50,
+      //     yPercent: -50,
+      //   },
+      //   {
+      //     opacity: 1,
+      //     duration: 0.5
+      //   },
+      //   'fade'
+      // )
       .add(() => {
         use('#use-dark-background, #use-dark-background-masked', {
           strokeWidth: 0
@@ -119,29 +138,42 @@
       .fromTo(
         '#the-background',
         {
-          xPercent: -50,
-          yPercent: -50
+          x: '50%',
+          transformOrigin: '50% 50%',
+          scaleX: 0
         },
         {
-          x: '1600px',
-          ease: 'ease.in',
+          scaleX: 2,
+          ease: 'power3.out',
           duration: 1.5
         }
       )
-      .add(() => gsap.set('.categories-list', {
-        x: -400,
-        y: -300,
-      }))
-      // .add(placeCategories);
-  }
+      .add(() => hide('#use-logo-grind-for-mask, #use-logo-type-for-mask'))
+      .add(() => use('.light-logo-group'))
+      .add(() => {
+        const { x, y } = MotionPathPlugin.convertCoordinates(svg, lightLogogroup, {
+          x: -150,
+          y: -200
+        });
 
-  function placeCategories() {
-    is_active_categories = true;
-    const textfieldEls = wrapperEl.querySelectorAll('.categories-textfield');
-    textfieldEls.forEach((element: SVGGElement) => {
-      textfields.add({ id: element.dataset.id, element });
-    });
-    animateTextfields();
+        let i = 0;
+        let ph = 0;
+        const yStart = 150;
+        const yOffset = 90;
+        console.log(lightLogogroups);
+        lightLogogroups.forEach((group, key) => {
+          console.log(group, key);
+          gsap.timeline()
+            .to(group, {
+              scale: .25,
+              x: x + 100,
+              y: y + yStart + i * yOffset,
+              duration: 0.5
+            }, ph);
+          i++;
+          ph += .15
+        });
+      });
   }
 
   function getMatrixPosition(i, cols = 3) {
@@ -170,81 +202,76 @@
   }
 </script>
 
-<div
-  class="wrapper"
-  bind:this={wrapperEl}
-  on:click|preventDefault={start}
-  on:keydown
-  class:is_active_categories
+<svg
+  bind:this={svg}
+  out:fly={{ duration: 2000 }}
+  style="fill: none; stroke-width: 6;"
+  viewBox="-400 -300 800 600"
 >
-  <svg
-    out:fly={{ duration: 2000 }}
-    style="fill: none; stroke-width: 6;"
-    viewBox="-400 -300 800 600"
-  >
-    <g id="use-light-logo-masked">
-      <use href="#the-background" style="fill: var(--dark);" />
-      <use href="#the-background" mask="url(#background-mask)" style="fill: var(--white);" />
-    </g>
+  <use id="use-dark-background" href="#the-background" style="fill: var(--dark-blue);" x="0" />
 
-    <g id="use-dark-logo-masked">
-      <use href="#the-background" style="fill: var(--white);" />
-      <use href="#the-background" mask="url(#background-mask)" style="fill: #ff66eb;" />
-    </g>
+  <use
+    id="use-dark-background-masked"
+    href="#the-background"
+    mask="url(#background-mask)"
+    style="fill: var(--white);"
+  />
 
-    <use id="use-grind" href="#the-grind" />
-    <use id="use-type" href="#the-type" />
+  <g id="use-light-logo-masked">
+    <use href="#the-background" style="fill: var(--dark-blue);" />
+    <use href="#the-background" mask="url(#background-mask)" style="fill: var(--white);" />
+  </g>
 
-    <use id="use-logo-grind" href="#the-grind" />
-    <use id="use-logo-type" href="#the-type" />
+  <g id="use-dark-logo-masked">
+    <use href="#the-background" style="fill: var(--white);" />
+    <use href="#the-background" mask="url(#background-mask)" style="fill: #ff66eb;" />
+  </g>
 
-    <use id="use-logo-grind-for-mask" href="#the-grind" />
-    <use id="use-logo-type-for-mask" href="#the-type" />
+  <use id="use-logo-grind" href="#the-grind" />
+  <use id="use-logo-type" href="#the-type" />
 
-    <use id="use-art-grind-masked" href="#the-grind" mask="url(#art-logo-border-mask)" />
-    <use id="use-art-type-masked" href="#the-type" mask="url(#art-type-mask)" />
+  <use id="use-logo-grind-for-mask" href="#the-grind" />
+  <use id="use-logo-type-for-mask" href="#the-type" />
 
-    <use id="use-dark-background" href="#the-background" style="fill: var(--dark);" />
-    <use
-      id="use-dark-background-masked"
-      href="#the-background"
-      mask="url(#background-mask)"
-      style="fill: var(--white);"
-    />
+  <use id="use-light-logo-group" class="light-logo-group" href="#the-light-logo-group" />
+  <use id="use-light-logo-group-1" class="light-logo-group" href="#the-light-logo-group" />
+  <use id="use-light-logo-group-2" class="light-logo-group" href="#the-light-logo-group" />
+  <use id="use-light-logo-group-3" class="light-logo-group" href="#the-light-logo-group" />
+  <use id="use-light-logo-group-4" class="light-logo-group" href="#the-light-logo-group" />
 
+  <use id="use-dark-logo-group" href="#the-dark-logo-group" />
 
-    <g class="categories-list categories-list">
-      {#await categories then cats}
-        {#each cats as cat}
-          <SVGTextfield
-            text={cat.name}
-            id={cat.slug}
-            link={categoriesBaseUrl + cat.slug}
-            ink="var(--dark)"
-            outline="var(--dark)"
-            fontSize="1em"
-            class="categories-textfield"
-          />
-        {/each}
-      {/await}
-    </g>
-  </svg>
-</div>
+  <use id="use-art-grind-masked" href="#the-grind" mask="url(#art-logo-border-mask)" />
+  <use id="use-art-type-masked" href="#the-type" mask="url(#art-type-mask)" />
+
+  <g class="categories-list categories-list">
+    {#await categories then cats}
+      {#each cats as cat}
+        <SVGTextfield
+          text={cat.name}
+          id={cat.slug}
+          link={categoriesBaseUrl + cat.slug}
+          ink="var(--dark-blue)"
+          outline="var(--dark-blue)"
+          fontSize="1em"
+          class="categories-textfield"
+        />
+      {/each}
+    {/await}
+  </g>
+</svg>
 
 <style>
   [id^='use-'] {
     visibility: hidden;
     pointer-events: none;
   }
-  .wrapper {
-    display: flex;
-    height: 100%;
-  }
   svg {
-    display: flex;
     width: 100%;
     height: 100%;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     overflow: hidden;
     vertical-align: middle;
     -o-object-fit: contain;

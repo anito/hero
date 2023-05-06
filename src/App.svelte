@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Icons from './lib/Icons.svelte';
-  import Sections from './lib/Sections.svelte';
+  import Widget from './lib/Widget.svelte';
   import Hero from './lib/Hero.svelte';
-  import { app_url } from './lib/utils';
+
+  export let appElement;
 
   onMount(() => {});
 
@@ -15,16 +16,17 @@
 
 <Icons />
 
-<Sections --background={`url(${app_url}background.jpg)`} --close={`url(${app_url}close.svg`} --circle="transparent">
-  <Hero on:click:menu-item={clickHandler} on:click:brand={clickHandler} />
-</Sections>
+<Hero on:click:brand={clickHandler} on:click:item {appElement} />
 
 <style lang="scss">
   :root {
+    --circle: transparent;
     --white: var(--light);
+    --yellow: #eaead4;
     --light: #fafbfb;
     --black: #000000;
-    --dark: #014574;
+    --dark-blue: #014574;
+    --light-blue: #2386d3;
     --purple: #ff00a6;
     --green: #68fd8b;
     --turkis: #48c2ff;
