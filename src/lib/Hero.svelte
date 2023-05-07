@@ -56,7 +56,7 @@
     { rotation: string | number; d: string; restored: boolean }
   >;
 
-  let isIntro;
+  let skipped;
   let currentPlaymodeIndex = 0;
   let app: HTMLElement;
   let main1: Element;
@@ -86,9 +86,7 @@
   let menuTl: GSAPTimeline;
   let brandTl: GSAPTimeline;
   let interactiveTl: GSAPTimeline;
-  let mounted: boolean;
 
-  $: mounted && toggleIntro(isIntro);
   $: activeDisplayMode = menuDict[currentPlaymodeIndex % menuDict.length];
   $: d =
     trackLib[activeDisplayMode]?.d === typeof 'object'
@@ -139,14 +137,7 @@
     resize();
     // initBrands();
     // initMenuTimeline();
-    mounted = true;
   });
-
-  function toggleIntro(intro) {
-    appElement.classList.toggle('app-intro', !!intro);
-    toggleSkipIntroBtn(!!intro);
-    toggleReplayIntroBtn(!intro);
-  }
 
   function resize() {
     ({ width, height, left, top } = main1.getBoundingClientRect());
@@ -181,20 +172,48 @@
       stroke: '#000',
       scale: 3
     });
-    gsap.set('#skip-intro', {
+    gsap.set(skipIntroBtn, {
       xPercent: -50,
       yPercent: -50,
       transformOrigin: '50% 50%',
-      y: 200
+      y: 230
     });
-    gsap.set('#replay-intro', {
+    gsap.set(replayIntroBtn, {
       xPercent: -50,
       yPercent: -50,
       transformOrigin: '50% 50%',
       x: 300,
-      y: 200
+      y: 230
+    });
+    gsap.set('.m2_iGroup image', {
+      transformOrigin: '50% 50%',
+      opacity: 0
+    });
+    gsap.set('#logo-icon, #type', {
+      xPercent: -50,
+      yPercent: -50,
+      transformOrigin: '50% 50%'
+    });
+    gsap.set('#icon', {
+      y: '-60px'
+    });
+    gsap.set('#image1', {
+      opacity: 1,
+      x: MotionPathPlugin.convertCoordinates(pImage1, image1, { x: 0, y: 0 }).x,
+      y: MotionPathPlugin.convertCoordinates(pImage1, image1, { x: 0, y: 0 }).y
+    });
+    gsap.set('#image2', {
+      opacity: 1,
+      x: MotionPathPlugin.convertCoordinates(pImage2, image2, { x: 800, y: 0 }).x,
+      y: MotionPathPlugin.convertCoordinates(pImage2, image2, { x: 0, y: 0 }).y
+    });
+    gsap.set('#image3', {
+      opacity: 1,
+      x: MotionPathPlugin.convertCoordinates(pImage3, image3, { x: 0, y: 0 }).x,
+      y: MotionPathPlugin.convertCoordinates(pImage3, image3, { x: 0, y: 0 }).y
     });
   }
+
   function preloadImages() {
     const images = gsap.utils.toArray('.m2_iGroup image, .m3_cGroup image');
     const onload = function (e: Event, i: number) {
@@ -204,6 +223,9 @@
           .to('#loading-spinner', {
             opacity: 0,
             delay: 0.2
+          })
+          .set('#loading-spinner', {
+            display: 'none'
           })
           .add(() => initMainTimeline());
       }
@@ -332,7 +354,7 @@
 
   function clickStageHandler() {
     wobble();
-    revertHeader(0);
+    revertHeader();
   }
 
   const setMenuClasses = (item?: SVGGElement, force?: boolean) => {
@@ -547,6 +569,9 @@
         section.active = true;
       }
     });
+
+    if (skipped) return tl.add(() => (skipped = false));
+
     section.lines.forEach((line, i, lines) => {
       tl.fromTo(
         line,
@@ -605,7 +630,7 @@
     return tl;
   }
 
-  function animateIcon(section: HeaderSection) {
+  function animateIcon(section: HeaderSection, duration = 0.4) {
     const { track, icon } = section;
     const image = icon?.querySelector('image');
     if (image) {
@@ -616,57 +641,29 @@
       const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, 0, true);
       const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1, true);
 
-      const tl = gsap.timeline({}).fromTo(
-        icon,
-        {
-          x: startPoint.x,
-          y: startPoint.y,
-          opacity: 0,
-          xPercent: -50,
-          yPercent: -50,
-          transformOrigin: '50% 50%'
-        },
-        {
-          x: endPoint.x,
-          y: endPoint.y,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'elastic.out(1, 0.75)'
-        }
-      );
-      return tl;
-    }
-  }
-
-  function animateIcon_(section: HeaderSection) {
-    const { track, icon } = section;
-    const image = icon?.querySelector('image');
-    if (image) {
-      const trackId = track.getAttribute('href');
-      const rawPath = MotionPathPlugin.getRawPath(trackId);
-      MotionPathPlugin.cacheRawPathMeasurements(rawPath);
-
-      const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, 0, true);
-      const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1, true);
-
-      const tl = gsap.timeline({}).fromTo(
-        icon,
-        {
-          x: startPoint.x,
-          y: startPoint.y,
-          opacity: 0,
-          xPercent: -50,
-          yPercent: -50,
-          transformOrigin: '50% 50%'
-        },
-        {
-          x: endPoint.x,
-          y: endPoint.y,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'elastic.out(1, 0.75)'
-        }
-      );
+      const tl = gsap
+        .timeline({})
+        .fromTo(
+          icon,
+          {
+            x: startPoint.x,
+            y: startPoint.y,
+            opacity: 0,
+            xPercent: -50,
+            yPercent: -50,
+            transformOrigin: '50% 50%'
+          },
+          {
+            x: endPoint.x,
+            y: endPoint.y,
+            opacity: 1,
+            duration,
+            ease: 'elastic.out(1, 0.75)'
+          }
+        )
+        .to(track, {
+          opacity: 1
+        });
       return tl;
     }
   }
@@ -676,14 +673,14 @@
       const section = $headerSections.find((item) => item.id == id);
       return interactiveTl.add(removeText(), '>').add(showSingleText(section), '>.3');
     } else {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ name: 'header-timeline' });
       $headerSections.forEach((section, i) => {
-        tl.add(() => removeText(), '>')
-          .add(() => showText(section), '>.05')
+        section.tl = tl;
+        tl.add(() => removeText())
+          .add(() => showText(section))
           .add(animateIcon(section), '>1');
       });
-      tl.add(shake());
-      return tl;
+      return tl.add(shake());
     }
   }
 
@@ -725,39 +722,31 @@
     menuTl.play().then(() => animateItem(1));
   }
 
-  function skipIntroHandler() {
-    mainTl.play('skip-intro');
-    toggleSkipIntroBtn(false);
-    toggleReplayIntroBtn(true);
-    isIntro = false;
+  function toggleIntro(intro) {
+    appElement.classList.toggle('app-intro', intro);
+    toggleIntroBtns(intro);
   }
 
-  function replayIntroHandler() {
+  function skipIntroHandler(e) {
+    e.stopPropagation();
+    skipped = true;
+    mainTl.progress(1);
+  }
+
+  function replayIntroHandler(e) {
+    e.stopPropagation();
     mainTl.play('start');
-    toggleSkipIntroBtn(true);
-    toggleReplayIntroBtn(false);
-    isIntro = true;
   }
 
-  const toggleSkipIntroBtn = (show: boolean) =>
-    gsap.fromTo(
-      skipIntroBtn,
-      {
-        visibility: show ? 'visible' : 'hidden'
-      },
-      {
-        y: show ? '-=50' : '+=50',
-        opacity: show ? 1 : 0,
-        duration: 0.3,
-        visibility: show ? 'visible' : 'hidden',
-        ease: 'power3.out'
-      }
-    );
-
-  const toggleReplayIntroBtn = (show: boolean) =>
-    gsap.set(replayIntroBtn, {
-      visibility: show ? 'visible' : 'hidden'
-    });
+  const toggleIntroBtns = (show: boolean) =>
+    gsap
+      .timeline({ onStart: () => {} })
+      .set(skipIntroBtn, {
+        opacity: show ? 1 : 0
+      })
+      .set(replayIntroBtn, {
+        opacity: show ? 0 : 1
+      });
 
   function initMainTimeline() {
     interactiveTl = gsap.timeline({
@@ -766,44 +755,18 @@
       }
     });
 
-    gsap.set('.m2_iGroup image', {
-      transformOrigin: '50% 50%',
-      opacity: 0
-    });
-    gsap.set('#logo-icon, #type', {
-      xPercent: -50,
-      yPercent: -50,
-      transformOrigin: '50% 50%'
-    });
-    gsap.set('#icon', {
-      y: '-60px'
-    });
-    gsap.set('#image1', {
-      opacity: 1,
-      x: MotionPathPlugin.convertCoordinates(pImage1, image1, { x: 0, y: 0 }).x,
-      y: MotionPathPlugin.convertCoordinates(pImage1, image1, { x: 0, y: 0 }).y
-    });
-    gsap.set('#image2', {
-      opacity: 1,
-      x: MotionPathPlugin.convertCoordinates(pImage2, image2, { x: 800, y: 0 }).x,
-      y: MotionPathPlugin.convertCoordinates(pImage2, image2, { x: 0, y: 0 }).y
-    });
-    gsap.set('#image3', {
-      opacity: 1,
-      x: MotionPathPlugin.convertCoordinates(pImage3, image3, { x: 0, y: 0 }).x,
-      y: MotionPathPlugin.convertCoordinates(pImage3, image3, { x: 0, y: 0 }).y
-    });
+    const getStartTl = () => gsap.timeline().from('#main1', { duration: 0.5, autoAlpha: 0 }, 0);
 
     const getCarsTl = () =>
       gsap
         .timeline({
-          defaults: { duration: 1 }
+          onStart: () => {},
+          onComplete: () => {}
         })
-        .from('#main1', { duration: 0.5, autoAlpha: 0 }, 0)
-        .add(() => (isIntro = true))
         .fromTo(
           '#image3',
           {
+            opacity: 0,
             scale: 0.6
           },
           {
@@ -812,6 +775,14 @@
             duration: 1.8
           },
           'move-image'
+        )
+        .to(
+          '#image3',
+          {
+            opacity: 1,
+            duration: 0.3
+          },
+          'move-image+=.3'
         )
         .fromTo(
           '#image1',
@@ -844,19 +815,17 @@
 
     return (mainTl = gsap
       .timeline({
-        onStart: () => {
-          isIntro = true;
-        },
         onComplete: () => {
-          isIntro = false;
+          toggleIntro(false);
+          revertHeader();
         }
       })
+      .add(getStartTl())
       .to('#stage', { opacity: 1, duration: 0.5 })
-      .add(getCarsTl())
       .add('start')
-      .add(animateHeader(), 'start+=2')
-      .add('skip-intro')
-      .add(revertHeader()));
+      .add(() => toggleIntro(true))
+      .add(getCarsTl())
+      .add(animateHeader(), 'start+=2'));
   }
 
   const shake = () => {
@@ -961,11 +930,17 @@
         <stop offset="10%" style="stop-color: var(--grd1-stop1); stop-opacity: 0.4" />
         <stop offset="99%" style="stop-color: var(--grd1-stop2); stop-opacity: 0.1" />
       </linearGradient>
-      <linearGradient id="grad_2" x1="50%" y1="0%" x2="50%" y2="100%">
+      <linearGradient id="grad_2" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="25%" style="stop-color: var(--grd2-stop1); stop-opacity: 0.1" />
         <stop offset="99%" style="stop-color: var(--grd2-stop2); stop-opacity: 0.2" />
       </linearGradient>
-      <linearGradient id="grad_3" x1="0%" y1="50%" x2="100%" y2="50%">
+      <linearGradient id="grad_3" x1="100%" y1="0%" x2="0%" y2="0%">
+        <stop offset="0%" style="stop-color: var(--white); stop-opacity: 0" />
+        <stop offset="45%" style="stop-color: var(--white); stop-opacity: 0" />
+        <stop offset="75%" style="stop-color: var(--white); stop-opacity: 0.2" />
+        <stop offset="99%" style="stop-color: var(--white); stop-opacity: 0" />
+      </linearGradient>
+      <linearGradient id="grad_3_rev" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" style="stop-color: var(--white); stop-opacity: 0" />
         <stop offset="45%" style="stop-color: var(--white); stop-opacity: 0" />
         <stop offset="75%" style="stop-color: var(--white); stop-opacity: 0.2" />
@@ -1004,7 +979,7 @@
         r="177"
         fill="none"
         stroke-width="3"
-        stroke="url(#grad1)"
+        stroke="url(#grad_1)"
         opacity="0.2"
       />
     </g>
@@ -1016,7 +991,7 @@
         r="229"
         fill="none"
         stroke-width="2"
-        stroke="url(#grad1)"
+        stroke="url(#grad_1)"
         opacity="0.15"
       />
     </g>
@@ -1028,7 +1003,7 @@
         r="286"
         fill="none"
         stroke-width="2"
-        stroke="url(#grad1)"
+        stroke="url(#grad_1)"
         opacity=".2"
       />
     </g>
@@ -1040,7 +1015,7 @@
         r="350"
         fill="none"
         stroke-width="1"
-        stroke="url(#grad2)"
+        stroke="url(#grad_2)"
         opacity="0.2"
       />
       <g class="brand orb-brand-0">
@@ -1072,7 +1047,7 @@
         r="400"
         fill="none"
         stroke-width="2"
-        stroke="url(#grad1)"
+        stroke="url(#grad_1)"
         opacity="0.2"
       />
       <g class="brand orb-brand-2">
@@ -1109,7 +1084,7 @@
     {#each $sections as { id, href, y, name }, i}
       <g class="m1_cGroup">
         <g>
-          <path class="track" {d} stroke="url(#grad3)" stroke-width="0" />
+          <path class="track" {d} stroke="url(#grad_3)" stroke-width="0" />
           <g class="item-3d menu" data-id={id}>
             <g class="item-label button" on:mouseover|stopPropagation={mouseoverHandler} on:focus>
               <rect
@@ -1148,10 +1123,16 @@
       <use id="icon" href="#logo-icon" />
       <use id="type" href="#logo-type" />
     </g>
-    {#each $headerSections as { id, href, y, name }, i}
+    {#each $headerSections as { id, href, y, name, grad }, i}
       <g class="m3_cGroup">
         <g>
-          <use class="track"  href={`#pIcon${id}`} stroke="url(#grad_3)" stroke-width="1" />
+          <use
+            class="track"
+            href={`#pIcon${id}`}
+            stroke={`url(#${grad})`}
+            stroke-width="1"
+            style="opacity: 0;"
+          />
           <g
             class="item-3d icon"
             id={`icon-item-${id}`}
@@ -1166,7 +1147,7 @@
                 width="180"
                 height="41"
                 rx="22"
-                fill="#000"
+                fill="#000000e0"
                 stroke="#ffffffa8"
                 stroke-miterlimit="10"
               />
@@ -1192,12 +1173,13 @@
       width="120"
       height="31"
       rx="15"
-      fill="var(--dark-blue)"
-      stroke-width="0"
+      fill="#000000e0"
+      stroke="#ffffffa8"
+      stroke-width="1"
       stroke-miterlimit="10"
     />
     <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
-      <tspan stroke-width="0" x="60" dy="20" style="font-size: .6em"> Intro überspringen </tspan>
+      <tspan stroke-width="0" x="62" dy="19" style="font-size: .6em"> Intro überspringen </tspan>
     </text>
   </g>
   <g id="replay-intro" class="item-label button intro" y="0" on:focus>
@@ -1207,8 +1189,9 @@
       width="30"
       height="30"
       rx="15"
-      fill="var(--dark-blue)"
-      stroke-width="0"
+      fill="#000000e0"
+      stroke="#ffffffa8"
+      stroke-width="1"
       stroke-miterlimit="10"
     />
     <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
@@ -1234,7 +1217,7 @@
       display: none;
     }
     .intro.button {
-      visibility: hidden;
+      opacity: 0;
     }
     .item-label {
       transition: opacity 0.3s ease-in-out;

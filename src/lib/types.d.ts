@@ -19,6 +19,8 @@ export interface Section {
 export interface HeaderSection extends Section {
   icon?: SVGGElement;
   track?: SVGPathElement;
+  grad?: string;
+  tl?: GSAPTimeline;
 }
 
 export interface SectionDict {
