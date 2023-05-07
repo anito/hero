@@ -199,10 +199,13 @@
     const images = gsap.utils.toArray('.m2_iGroup image, .m3_cGroup image');
     const onload = function (e: Event, i: number) {
       if (i === images.length - 1) {
-        gsap.set('#loading-spinner', {
-          visibility: 'hidden'
-        });
-        initMainTimeline().play();
+        gsap
+          .timeline()
+          .to('#loading-spinner', {
+            opacity: 0,
+            delay: 0.2
+          })
+          .add(() => initMainTimeline());
       }
     };
     images.forEach((image: SVGImageElement, i, arr) => (image.onload = (e) => onload(e, i)));
@@ -556,7 +559,7 @@
             each: 0.03,
             amount: 0.2
           },
-          duration: 0.7
+          duration: 1
         },
         '<.1'
       );
@@ -589,8 +592,8 @@
             {
               y: '100%',
               stagger: {
-                each: 0.01,
-                amount: 0.3
+                each: 0.02,
+                amount: 0.2
               },
               duration: 0.5
             },
@@ -627,7 +630,40 @@
           x: endPoint.x,
           y: endPoint.y,
           opacity: 1,
-          duration: 1,
+          duration: 0.4,
+          ease: 'elastic.out(1, 0.75)'
+        }
+      );
+      return tl;
+    }
+  }
+
+  function animateIcon_(section: HeaderSection) {
+    const { track, icon } = section;
+    const image = icon?.querySelector('image');
+    if (image) {
+      const trackId = track.getAttribute('href');
+      const rawPath = MotionPathPlugin.getRawPath(trackId);
+      MotionPathPlugin.cacheRawPathMeasurements(rawPath);
+
+      const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, 0, true);
+      const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1, true);
+
+      const tl = gsap.timeline({}).fromTo(
+        icon,
+        {
+          x: startPoint.x,
+          y: startPoint.y,
+          opacity: 0,
+          xPercent: -50,
+          yPercent: -50,
+          transformOrigin: '50% 50%'
+        },
+        {
+          x: endPoint.x,
+          y: endPoint.y,
+          opacity: 1,
+          duration: 0.4,
           ease: 'elastic.out(1, 0.75)'
         }
       );
@@ -640,11 +676,11 @@
       const section = $headerSections.find((item) => item.id == id);
       return interactiveTl.add(removeText(), '>').add(showSingleText(section), '>.3');
     } else {
-      const tl = gsap.timeline().add('before-header-animation');
+      const tl = gsap.timeline();
       $headerSections.forEach((section, i) => {
         tl.add(() => removeText(), '>')
-          .add(() => showText(section), '>.2')
-          .add(animateIcon(section), '>1.8');
+          .add(() => showText(section), '>.05')
+          .add(animateIcon(section), '>1');
       });
       tl.add(shake());
       return tl;
@@ -691,7 +727,6 @@
 
   function skipIntroHandler() {
     mainTl.play('skip-intro');
-    // mainTl.play('before-header-animation');
     toggleSkipIntroBtn(false);
     toggleReplayIntroBtn(true);
     isIntro = false;
@@ -735,7 +770,7 @@
       transformOrigin: '50% 50%',
       opacity: 0
     });
-    gsap.set('#icon, #type', {
+    gsap.set('#logo-icon, #type', {
       xPercent: -50,
       yPercent: -50,
       transformOrigin: '50% 50%'
@@ -816,22 +851,12 @@
           isIntro = false;
         }
       })
+      .to('#stage', { opacity: 1, duration: 0.5 })
+      .add(getCarsTl())
       .add('start')
-      .add(getCarsTl().play())
-      .add('cars')
-      .add(animateHeader(), 'cars+=2')
+      .add(animateHeader(), 'start+=2')
       .add('skip-intro')
-      .fromTo(
-        '.item-3d',
-        {
-          opacity: 0
-        },
-        {
-          opacity: 1,
-          duration: 1.5
-        }
-      )
-      .add(revertHeader())).to('#stage', { opacity: 1, duration: 0.5 }, 0);
+      .add(revertHeader()));
   }
 
   const shake = () => {
@@ -940,11 +965,11 @@
         <stop offset="25%" style="stop-color: var(--grd2-stop1); stop-opacity: 0.1" />
         <stop offset="99%" style="stop-color: var(--grd2-stop2); stop-opacity: 0.2" />
       </linearGradient>
-      <linearGradient id="grad3" x1="0%" y1="50%" x2="100%" y2="50%">
-        <stop offset="0%" style="stop-color: #030f19; stop-opacity: 0" />
-        <stop offset="45%" style="stop-color: #030f19; stop-opacity: 0" />
-        <stop offset="75%" style="stop-color: var(--grd1-stop1); stop-opacity: 0.2" />
-        <stop offset="99%" style="stop-color: #030f19; stop-opacity: 0.1" />
+      <linearGradient id="grad_3" x1="0%" y1="50%" x2="100%" y2="50%">
+        <stop offset="0%" style="stop-color: var(--white); stop-opacity: 0" />
+        <stop offset="45%" style="stop-color: var(--white); stop-opacity: 0" />
+        <stop offset="75%" style="stop-color: var(--white); stop-opacity: 0.2" />
+        <stop offset="99%" style="stop-color: var(--white); stop-opacity: 0" />
       </linearGradient>
       <path id="pImage1" d="M-1100,50 -550,100" />
       <path id="pImage2" d="M400,0 100,0" />
@@ -1126,7 +1151,7 @@
     {#each $headerSections as { id, href, y, name }, i}
       <g class="m3_cGroup">
         <g>
-          <use class="track" href={`#pIcon${id}`} stroke="white" stroke-width="0" />
+          <use class="track"  href={`#pIcon${id}`} stroke="url(#grad_3)" stroke-width="1" />
           <g
             class="item-3d icon"
             id={`icon-item-${id}`}
@@ -1140,9 +1165,9 @@
                 y=".5"
                 width="180"
                 height="41"
-                rx="10"
+                rx="22"
                 fill="#000"
-                stroke="#ffffff33"
+                stroke="#ffffffa8"
                 stroke-miterlimit="10"
               />
               <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">

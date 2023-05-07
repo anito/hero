@@ -602,33 +602,36 @@
           fill="#fff"
         /></g
       >
+      <g id="round-box">
+        <path d="m270.12,0h-95.92c-1.36,1.72-2.93,3.28-4.67,4.62-.4.3-.93.37-1.38.15l-3.57-1.69c-.13-.07-.26-.12-.39-.16-2.12-.75-4.45.36-5.2,2.47l-1.32,3.72c-.16.47-.59.79-1.07.86-2.27.29-4.57.29-6.84,0-.49-.05-.91-.39-1.07-.86l-1.32-3.72c-.05-.13-.1-.26-.16-.39-.97-2.04-3.4-2.9-5.43-1.93l-3.55,1.69c-.46.22-1,.16-1.39-.15-1.74-1.33-3.3-2.89-4.66-4.61H36.28C16.33,0,0,16.33,0,36.28h0c0,19.96,16.33,36.28,36.28,36.28h233.83c19.96,0,36.28-16.33,36.28-36.28h0c0-19.96-16.33-36.28-36.28-36.28Z" fill="none"/>
+      </g>
       <g id="spinner"
-          ><circle cx="12" cy="12" r="9.5" fill="none" stroke-width="1" stroke-linecap="round"
-            ><animate
-              attributeName="stroke-dasharray"
-              dur="1.5s"
-              calcMode="spline"
-              values="0 150;42 150;42 150;42 150"
-              keyTimes="0;0.475;0.95;1"
-              keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
-              repeatCount="indefinite"
-            /><animate
-              attributeName="stroke-dashoffset"
-              dur="1.5s"
-              calcMode="spline"
-              values="0;-16;-59;-59"
-              keyTimes="0;0.475;0.95;1"
-              keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
-              repeatCount="indefinite"
-            /></circle
-          ><animateTransform
-            attributeName="transform"
-            type="rotate"
-            dur="2s"
-            values="0 12 12;360 12 12"
+        ><circle cx="12" cy="12" r="9.5" fill="none" stroke-width="1" stroke-linecap="round"
+          ><animate
+            attributeName="stroke-dasharray"
+            dur="1.5s"
+            calcMode="spline"
+            values="0 150;42 150;42 150;42 150"
+            keyTimes="0;0.475;0.95;1"
+            keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
             repeatCount="indefinite"
-          /></g
-        >
+          /><animate
+            attributeName="stroke-dashoffset"
+            dur="1.5s"
+            calcMode="spline"
+            values="0;-16;-59;-59"
+            keyTimes="0;0.475;0.95;1"
+            keySplines="0.42,0,0.58,1;0.42,0,0.58,1;0.42,0,0.58,1"
+            repeatCount="indefinite"
+          /></circle
+        ><animateTransform
+          attributeName="transform"
+          type="rotate"
+          dur="2s"
+          values="0 12 12;360 12 12"
+          repeatCount="indefinite"
+        /></g
+      >
     </symbol>
     <symbol id="chinese-type">
       <defs>
