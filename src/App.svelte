@@ -2,9 +2,7 @@
   import { onMount } from 'svelte';
   import Icons from './lib/Icons.svelte';
   import Widget from './lib/Widget.svelte';
-  import Hero from './lib/Hero.svelte';
-
-  export let appElement;
+  import Hero from './lib/Hero_1.svelte';
 
   onMount(() => {});
 
@@ -16,7 +14,7 @@
 
 <Icons />
 
-<Hero on:click:brand={clickHandler} on:click:item {appElement} />
+<Hero on:click:brand={clickHandler} on:click:item />
 
 <style lang="scss">
   :root {
@@ -31,6 +29,8 @@
     --green: #68fd8b;
     --turkis: #48c2ff;
     --c-origin: #03f1ff;
+    --grd0-stop1: rgb(255 7 0);
+    --grd0-stop2: rgb(0 135 255);
     --grd1-stop1: rgb(0 255 231);
     --grd1-stop2: rgb(0 135 255);
     --grd2-stop1: rgb(0 71 255);

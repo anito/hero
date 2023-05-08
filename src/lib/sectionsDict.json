@@ -2,57 +2,72 @@
   {
     "id": 0,
     "name": "Ersatzteile & Zubehör",
-    "href": "parts@512x.png",
+    "href": "512w/parts@512x.png",
     "lines": [],
-    "grad": "grad_3"
+    "grad": "grad_3",
+    "y": 0
   },
   {
     "id": 1,
     "name": "Werkstatt",
-    "href": "garage2@512x.png",
+    "link": "/werkstatt/",
+    "href": "512w/garage2@512x.png",
     "lines": [],
-    "grad": "grad_3"
+    "grad": "grad_3",
+    "y": 0
   },
   {
     "id": 2,
     "name": "Mietmaschinen",
-    "href": "rent@512x.png",
+    "link": "/product-category/mieten/",
+    "href": "512w/rent@512x.png",
     "lines": [],
-    "grad": "grad_3"
+    "grad": "grad_3",
+    "y": 0
   },
   {
     "id": 3,
     "name": "Angebote",
-    "href": "tractor@512x.png",
+    "link": "/showroom/",
+    "href": "512w/tractor@512x.png",
     "lines": [],
-    "grad": "grad_3"
+    "grad": "grad_3",
+    "y": 0
   },
   {
     "id": 4,
     "name": "Neu & Gebrauchtwagen",
-    "href": "oldnew@512x.png",
+    "link": "/neu-gebrauchtwagen/",
+    "href": "512w/oldnew@512x.png",
     "lines": [],
-    "grad": "grad_3_rev"
+    "grad": "grad_3_rev",
+    "y": 0
   },
   {
     "id": 5,
     "name": "TYM - Werksvertretung",
-    "href": "tym@512x.png",
+    "link": "/#tym",
+    "href": "512w/tym@512x.png",
     "lines": [],
-    "grad": "grad_3_rev"
+    "grad": "grad_3_rev",
+    "y": 0
   },
   {
     "id": 6,
     "name": "Abschleppservice",
-    "href": "towing@512x.png",
+    "link": "tel:00493505348725",
+    "href": "512w/towing@512x.png",
     "lines": [],
-    "grad": "grad_3_rev"
+    "grad": "grad_3_rev",
+    "y": 0
   },
   {
     "id": 7,
     "name": "Reifenservice",
-    "href": "tires@512x.png",
+    "link": "/werkstatt/",
+    "href": "512w/tires@512x.png",
     "lines": [],
-    "grad": "grad_3_rev"
+    "grad": "grad_3_rev",
+    "y": 0
   }
 ]

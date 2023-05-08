@@ -20,7 +20,7 @@ export interface HeaderSection extends Section {
   icon?: SVGGElement;
   track?: SVGPathElement;
   grad?: string;
-  tl?: GSAPTimeline;
+  link?: string;
 }
 
 export interface SectionDict {
