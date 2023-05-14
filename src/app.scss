@@ -3,9 +3,6 @@
     opacity: 1;
   }
   &.playing {
-    main::after {
-      opacity: 1;
-    }
     #main-logo {
       transform: translateY(-50px);
       #type {
@@ -25,7 +22,8 @@
         }
       }
     }
-    .main_imageGroup {
+    &:not(.app-intro) .main_imageGroup {
+      transition-delay: .8s;
       opacity: 0.2;
     }
   }
@@ -35,6 +33,7 @@
       #skip-intro, #sleep-switch {
         pointer-events: all;
       }
+
     }
     section .content {
       opacity: 0;

@@ -27,7 +27,7 @@
   const iconImageOpacity = 1;
   const brandsCount = 5;
   const loadBrandsInterval = 15000;
-  const secondsToSleep = 15;
+  const secondsToSleep = 10;
   const minHeight = 741;
   const CLOSED = 'closed';
   const DEFAULT = 'default';
@@ -159,6 +159,8 @@
     // Split text again on resize
     splitText($sections);
     splitText($headerSections);
+
+    positionControls();
   }
 
   function splitText(sections) {
@@ -234,14 +236,20 @@
     fetchData('wbp_brands').then((res) => ($brands = res.brands));
   }
 
-  function initElements() {
+  function positionControls() {
+    const wc = (width * 800) / width / 2; // rechter Rand
+    const hc = (-height * 600) / height / 2; // oberer Rand
     gsap.set(autoCloseSwitch, {
-      xPercent: -50,
-      yPercent: -50,
-      transformOrigin: '50% 50%',
-      x: 400 - 50,
-      y: -300
+      x: wc - 80,
+      y: hc + 50
     });
+    gsap.set(replayIntroBtn, {
+      x: wc - 69,
+      y: hc + 105
+    });
+  }
+
+  function initElements() {
     gsap.set('#loading-spinner', {
       xPercent: -50,
       yPercent: -50,
@@ -525,9 +533,10 @@
   // }
 
   function prepareForSleep() {
-    if (!autoClose) return;
     clearTimeout(autoCloseTimeoutId);
-    autoCloseTimeoutId = setTimeout(() => sleep(), secondsToSleep * 1000);
+    autoCloseTimeoutId = setTimeout(() => {
+      !isIntro && autoClose && sleep();
+    }, secondsToSleep * 1000);
   }
 
   function getAutoClose() {
@@ -762,11 +771,11 @@
           .to(
             section.icon,
             {
-              scale: 1.2,
+              scale: 1.4,
               ease: 'power1.in',
               yoyo: true,
               repeat: 1,
-              duration: 0.2
+              duration: 0.4
             },
             '<.2'
           );
@@ -848,7 +857,11 @@
     });
 
     const getStartTl = () => gsap.timeline().from('#main1', { duration: 0.5, autoAlpha: 1 }, 0);
-
+    const getMainLogo = () =>
+      gsap.to('#main-logo', {
+        opacity: 1,
+        duration: 1
+      });
     const getCarsTl = () =>
       gsap
         .timeline({
@@ -899,11 +912,7 @@
             duration: 1.5
           },
           'move-image+=.7'
-        )
-        .to('#main-logo', {
-          opacity: 1,
-          duration: 1
-        });
+        );
 
     return (mainTl = gsap
       .timeline({
@@ -918,6 +927,7 @@
       .add('start')
       .add(() => toggleIntro(true))
       .add(getCarsTl())
+      .add(getMainLogo())
       .add(animateHeader(), 'start+=5'));
   }
 
@@ -1030,7 +1040,7 @@
         <stop offset="75%" style="stop-color: var(--white); stop-opacity: 0.2" />
         <stop offset="99%" style="stop-color: var(--white); stop-opacity: 0" />
       </linearGradient>
-      <path id="pImage1" d="M-1100,50 -550,100" />
+      <path id="pImage1" d="M-1100,50 -500,100" />
       <path id="pImage2" d="M400,0 100,0" />
       <path id="pImage3" d="M-230,50 -130,50" />
 
@@ -1269,45 +1279,46 @@
   </g>
   <use id="loading-spinner" href="#spinner" stroke="#000" />
   <g id="skip-intro" class="item-label button intro" y="0" on:focus>
-    <rect
-      x=".5"
-      y=".5"
-      width="120"
-      height="31"
-      rx="15"
-      fill="#000000e0"
-      stroke="#ffffffa8"
-      stroke-width="1"
-      stroke-miterlimit="10"
-    />
-    <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
-      <tspan stroke-width="0" x="62" dy="19" style="font-size: .6em"> Intro überspringen </tspan>
-    </text>
-  </g>
-  <g id="replay-intro" class="item-label button intro" on:focus opacity="0.5">
-    <rect
-      x="0"
-      y="0"
-      width="30"
-      height="30"
-      rx="15"
-      fill="#00000060"
-      stroke="#ffffff68"
-      stroke-width="1"
-      stroke-miterlimit="10"
-    />
-    <polygon
-      points="0 0 5.9 3.41 11.8 6.81 5.9 10.22 0 13.62 0 6.81 0 0"
-      fill="#ffffff68"
-      style="transform: translate(11px, 8px)"
-    />
-  </g>
-  <g id="sleep-switch">
-    <g>
-      <path d="m6,11.5c-3.03,0-5.5-2.47-5.5-5.5S2.97.5,6,.5h11c3.03,0,5.5,2.47,5.5,5.5s-2.47,5.5-5.5,5.5H6Z" fill="#fff" opacity=".45"/>
-      <path d="m17,1c2.76,0,5,2.24,5,5s-2.24,5-5,5H6c-2.76,0-5-2.24-5-5S3.24,1,6,1h11m0-1H6C2.7,0,0,2.7,0,6s2.7,6,6,6h11c3.3,0,6-2.7,6-6S20.3,0,17,0h0Z"/>
+    <g opacity=".4">
+      <rect
+        x=".5"
+        y=".5"
+        width="120"
+        height="31"
+        rx="15"
+        fill="#000000e0"
+        stroke="#ffffffa8"
+        stroke-width="1"
+        stroke-miterlimit="10"
+      />
+      <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
+        <tspan stroke-width="0" x="62" dy="17" style="font-size: .6em"> Intro überspringen </tspan>
+      </text>
     </g>
-    <rect class="toggle" x="12" y="1.5" width="9" height="9" rx="4.5" ry="4.5"/>
+  </g>
+  <g id="replay-intro" class="item-label button intro" on:focus>
+    <g opacity=".4">
+      <circle cx="11.5" cy="11.5" r="11" fill="#fff" stroke="#000" stroke-miterlimit="10" />
+      <polygon
+        fill="#000"
+        points="7.16 11.38 7.16 5.5 12.25 8.44 17.34 11.38 12.25 14.32 7.16 17.26 7.16 11.38"
+      />
+      <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
+        <tspan stroke-width="0" x="12" dy="34" style="font-size: .5em"> Intro </tspan>
+      </text>
+    </g>
+  </g>
+  <g id="sleep-switch" opacity=".4">
+    <g>
+      <path
+        d="m6,11.5c-3.03,0-5.5-2.47-5.5-5.5S2.97.5,6,.5h11c3.03,0,5.5,2.47,5.5,5.5s-2.47,5.5-5.5,5.5H6Z"
+        fill="#fff"
+      />
+      <path
+        d="m17,1c2.76,0,5,2.24,5,5s-2.24,5-5,5H6c-2.76,0-5-2.24-5-5S3.24,1,6,1h11m0-1H6C2.7,0,0,2.7,0,6s2.7,6,6,6h11c3.3,0,6-2.7,6-6S20.3,0,17,0h0Z"
+      />
+    </g>
+    <rect fill="#000" class="toggle" x="12" y="1.5" width="9" height="9" rx="4.5" ry="4.5" />
     <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
       <tspan stroke-width="0" x="10" dy="25" style="font-size: .5em">
         Menu autom. schliessen

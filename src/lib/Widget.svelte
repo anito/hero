@@ -287,8 +287,4 @@
   .categories-list {
     display: none;
   }
-  .is_active_categories .categories-list {
-    display: inline-block;
-    visibility: visible;
-  }
 </style>
