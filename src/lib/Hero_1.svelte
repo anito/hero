@@ -708,7 +708,10 @@
         }
       })
       .add(() => {
-        $headerSections.forEach((section) => animateIcon(section, 'in'), 0.1);
+        const tl = gsap.timeline();
+        $headerSections.forEach((section, i) => {
+          tl.add(animateIcon(section, 'in'), i * .05)
+        });
       });
   }
 
@@ -722,7 +725,10 @@
         }
       })
       .add(() => {
-        $headerSections.forEach((section) => animateIcon(section, 'out'), 0.1);
+        const tl = gsap.timeline();
+        $headerSections.forEach((section, i) => {
+          tl.add(animateIcon(section, 'out'), i * .05)
+        });
       });
   }
 
@@ -735,25 +741,32 @@
     const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, dir === 'in' ? 1 : 0, true);
     const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, dir === 'in' ? 0 : 1, true);
 
-    const tl = gsap.timeline().fromTo(
-      icon,
-      {
-        x: startPoint.x,
-        y: startPoint.y,
-        opacity: dir === 'in' ? 1 : 0,
-        xPercent: -50,
-        yPercent: -50,
-        transformOrigin: '50% 50%'
-      },
-      {
-        x: endPoint.x,
-        y: endPoint.y,
-        opacity: dir === 'in' ? 0 : 1,
-        duration: 1,
-        ease: 'elastic.out(1, 0.75)'
-      },
-      '<.1'
-    );
+    const duration = 1;
+    const tl = gsap
+      .timeline()
+      .fromTo(
+        icon,
+        {
+          x: startPoint.x,
+          y: startPoint.y,
+          xPercent: -50,
+          yPercent: -50,
+          transformOrigin: '50% 50%'
+        },
+        {
+          x: endPoint.x,
+          y: endPoint.y,
+          duration,
+          ease: 'elastic.out(1, 0.75)',
+        }, 0
+      )
+      .to(
+        icon,
+        {
+          opacity: dir === 'in' ? 0 : 1,
+          duration: dir === 'in' ? duration * .1 : duration,
+        }, 0 
+      );
     return tl;
   }
 
@@ -763,9 +776,9 @@
       const section = $headerSections.find((item) => item.id == id);
       return interactiveTl.add(removeText(), '>').add(showSingleText(section), '>.3');
     } else {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({defaults: {duration: 1}});
       $headerSections.forEach((section, i) => {
-        tl.add(animateIcon(section), 0)
+        tl.add(animateIcon(section), i * 0.05)
           .add(() => removeText())
           .add(showText(section), '>.5')
           .to(
