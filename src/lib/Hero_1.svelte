@@ -27,7 +27,7 @@
   const iconImageOpacity = 1;
   const brandsCount = 5;
   const loadBrandsInterval = 15000;
-  const secondsToSleep = 10;
+  const secondsToSleep = 5;
   const minHeight = 741;
   const CLOSED = 'closed';
   const DEFAULT = 'default';
@@ -1073,7 +1073,7 @@
       <image id="image3" href={app_url.concat('mower.png')} />
     </g>
     <g class="main_imageGroup">
-      <image id="image1" href={app_url.concat('bmw1.png')} />
+      <image id="image1" href={app_url.concat('touran.png')} />
     </g>
     <g class="main_imageGroup">
       <image id="image2" href={app_url.concat('tractor.png')} />
@@ -1352,7 +1352,7 @@
       outline: none;
     }
     text {
-      font-family: 'canada-type-gibson';
+      font-family: 'Gibson';
     }
     .m1_cGroup {
       display: none;

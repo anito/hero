@@ -1208,7 +1208,7 @@
       outline: none;
     }
     text {
-      font-family: 'canada-type-gibson';
+      font-family: 'Gibson';
     }
     .m1_cGroup {
       display: none;
