@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import Icons from './lib/Icons.svelte';
   import Widget from './lib/Widget.svelte';
-  import Hero from './lib/Hero_1.svelte';
+  import Hero from './lib/Hero_3.svelte';
 
   onMount(() => {});
 

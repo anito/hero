@@ -16,6 +16,8 @@
   import SvgImage from './SVGImage.svelte';
   import type { Brand, HeaderSection, Section } from './types';
 
+  export let appElement: HTMLElement;
+
   gsap.registerPlugin(MotionPathPlugin, SplitText, InertiaPlugin, CustomEase, CustomWiggle);
 
   CustomWiggle.create('wirrr', { wiggles: 6, type: 'easeOut' });
@@ -27,8 +29,6 @@
   const iconImageOpacity = 1;
   const brandsCount = 5;
   const loadBrandsInterval = 15000;
-  const secondsToSleep = 5;
-  const minHeight = 741;
   const CLOSED = 'closed';
   const DEFAULT = 'default';
   const OPEN = 'open';
@@ -56,17 +56,12 @@
     { rotation: string | number; d: string; restored: boolean }
   >;
 
-  let skipped = false;
-  let sleeping = false;
-  let isIntro = true;
-  let inTransfer = false;
-  let autoClose = true;
+  let skipped;
   let currentPlaymodeIndex = 0;
   let app: HTMLElement;
   let main1: Element;
   let skipIntroBtn: Element;
   let replayIntroBtn: Element;
-  let autoCloseSwitch: Element;
   let m1_cGroup: SVGGElement[];
   let menuTracks: SVGPathElement[];
   let menuItems3d: SVGGElement[];
@@ -79,22 +74,19 @@
   let pImage1;
   let pImage2;
   let pImage3;
+  let splitTextTimeoutId;
   let timeoutId;
   let selectedItemId: number | undefined;
   let width;
   let height;
   let left;
   let top;
-  let autoCloseTimeoutId;
   let intervalId;
   let mainTl: GSAPTimeline;
   let menuTl: GSAPTimeline;
   let brandTl: GSAPTimeline;
   let interactiveTl: GSAPTimeline;
-  let mounted: boolean;
 
-  $: interactive = height >= minHeight;
-  $: mounted && setSleepControls(autoClose);
   $: activeDisplayMode = menuDict[currentPlaymodeIndex % menuDict.length];
   $: d =
     trackLib[activeDisplayMode]?.d === typeof 'object'
@@ -116,12 +108,10 @@
     main1 = document.getElementById('main1');
     skipIntroBtn = document.getElementById('skip-intro');
     replayIntroBtn = document.getElementById('replay-intro');
-    autoCloseSwitch = document.getElementById('sleep-switch');
-    main1.addEventListener('mousemove', mousemoveHandler);
+    // main1.addEventListener('mousemove', mousemoveHandler);
     main1.addEventListener('click', clickStageHandler);
     skipIntroBtn.addEventListener('click', skipIntroHandler);
     replayIntroBtn.addEventListener('click', replayIntroHandler);
-    autoCloseSwitch.addEventListener('click', autoCloseHandler);
 
     m1_cGroup = document.querySelectorAll('.m1_cGroup') as unknown as SVGGElement[];
     menuTracks = gsap.utils.toArray('.track') as unknown as SVGPathElement[];
@@ -141,15 +131,12 @@
 
     initElements();
     preloadImages();
-    initHeaderSections();
-    resize();
-
+    await initHeaderSections();
     // initMenuSections();
     // initCloseAction();
+    resize();
     // initBrands();
     // initMenuTimeline();
-    setAutoClose(getAutoClose() ? 'on' : 'off');
-    mounted = true;
   });
 
   function resize() {
@@ -157,10 +144,13 @@
     gsap.set('#stage', { x: '0%', y: '0%' });
 
     // Split text again on resize
-    splitText($sections);
-    splitText($headerSections);
-
-    positionControls();
+    clearTimeout(splitTextTimeoutId);
+    splitTextTimeoutId = setTimeout(() => {
+      splitText($sections);
+    }, 1000);
+    splitTextTimeoutId = setTimeout(() => {
+      splitText($headerSections);
+    }, 1000);
   }
 
   function splitText(sections) {
@@ -169,84 +159,9 @@
     });
   }
 
-  function _splitText(section) {
-    section.split?.revert();
-    section.split = new SplitText(section.title, {
-      type: 'chars, lines',
-      charsClass: 'charTxt',
-      linesClass: 'lineTxt'
-    });
-
-    section.lines = [];
-    for (var lines = section.split.lines, n = 0; lines.length > n; n++) {
-      var i = lines[n].querySelectorAll('.charTxt');
-      gsap.set(i, {
-        y: '-100%'
-      });
-      section.lines.push(i);
-    }
-    section.lines.reverse();
-  }
-
-  function initHeaderSections() {
-    for (
-      let nodes = document.querySelectorAll('section[data-header-section]'), i = 0;
-      nodes.length > i;
-      i++
-    ) {
-      const element = nodes[i] as unknown as HTMLElement;
-      const id = parseInt(element.dataset.headerSection);
-
-      headerSections.put({
-        id,
-        element,
-        title: element.querySelector('.title')
-      });
-
-      // We can now add Icon & track since they're now rendered
-      $headerSections.forEach((item, i) => {
-        const icon = document.getElementById(`icon-item-${item.id}`) as unknown as SVGGElement;
-        const track = icon.parentElement.querySelector('.track') as unknown as SVGPathElement;
-
-        item.icon = icon;
-        item.track = track;
-      });
-    }
-  }
-
-  function initMenuSections() {
-    for (
-      let nodes = document.querySelectorAll('section[data-section]'), i = 0;
-      nodes.length > i;
-      i++
-    ) {
-      const sectionEl = nodes[i] as unknown as HTMLElement;
-      const id = parseInt(sectionEl.dataset.section);
-
-      sections.put({
-        id,
-        element: sectionEl,
-        title: sectionEl.querySelector('.title')
-      });
-    }
-  }
-
   function initBrands() {
     initBrandTimeline();
     fetchData('wbp_brands').then((res) => ($brands = res.brands));
-  }
-
-  function positionControls() {
-    const wc = (width * 800) / width / 2; // rechter Rand
-    const hc = (-height * 600) / height / 2; // oberer Rand
-    gsap.set(autoCloseSwitch, {
-      x: wc - 80,
-      y: hc + 50
-    });
-    gsap.set(replayIntroBtn, {
-      x: wc - 69,
-      y: hc + 105
-    });
   }
 
   function initElements() {
@@ -274,18 +189,10 @@
       transformOrigin: '50% 50%',
       opacity: 0
     });
-    gsap.set('.item-3d image', {
-      transformOrigin: '50% 50%',
-      x: 0
-    });
-    gsap.set('.item-3d circle', {
-      xPercent: 75,
-      yPercent: 45
-    });
     gsap.set('#logo-icon, #type', {
-      transformOrigin: '50% 50%',
       xPercent: -50,
-      yPercent: -50
+      yPercent: -50,
+      transformOrigin: '50% 50%'
     });
     gsap.set('#icon', {
       y: '-60px'
@@ -393,7 +300,6 @@
   const getLabelPosition = (deg) => labelPosition.find(({ min, max }) => min <= deg && deg <= max);
 
   function trackOnCompleteRotationHandler() {
-    console.log('trackOnCompleteRotationHandler');
     const track = this.targets()[0];
     const rotation = gsap.getProperty(track, 'rotation');
     const parent = track.parentElement as unknown as SVGGElement;
@@ -407,7 +313,6 @@
   }
 
   function trackOnStartRotationHandler() {
-    console.log('trackOnStartRotationHandler');
     const track = this.targets()[0] as unknown as SVGPathElement;
     const parent = track.parentElement as unknown as SVGGElement;
     const menuItem3d = parent.querySelector('.item-3d.menu') as unknown as SVGGElement;
@@ -476,12 +381,12 @@
     dispatch('click:item', { type: 'item', data: id });
   }
 
-  function mouseoverHandler(e: Event) {
+  function mouseoverHandler(e: MouseEvent) {
     const target = e.target as unknown as HTMLElement;
     const parent = target.closest('.item-3d') as unknown as HTMLElement;
     const image = parent.querySelector('image') as unknown as HTMLElement;
     parent.addEventListener('mouseleave', mouseleaveHandler);
-    parent.addEventListener('touchstart', clickSectionHandler);
+    parent.addEventListener('click', clickSectionHandler);
 
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
@@ -490,7 +395,7 @@
       if (id != selectedItemId) {
         animateHeader(id);
       }
-    }, 500);
+    }, 200);
 
     gsap.to(image, {
       opacity: 1,
@@ -513,54 +418,14 @@
   }
 
   function mousemoveHandler(e: MouseEvent) {
-    if (isIntro || inTransfer) return;
-    if (sleeping) {
-      awaik();
-    }
-    prepareForSleep();
-  }
+    const dx = e.clientX - left - cx;
+    const dy = e.clientY - top - cy;
 
-  // function mousemoveHandler(e: MouseEvent) {
-  //   const dx = e.clientX - left - cx;
-  //   const dy = e.clientY - top - cy;
-
-  //   gsap.to('.m1_cGroup', {
-  //     x: (i) => -dx * (i + 1) * 0.003,
-  //     y: (i) => -dy * (i + 1) * 0.003,
-  //     rotation: Math.random() * 0.2,
-  //     duration: 1.5
-  //   });
-  // }
-
-  function prepareForSleep() {
-    clearTimeout(autoCloseTimeoutId);
-    autoCloseTimeoutId = setTimeout(() => {
-      !isIntro && autoClose && sleep();
-    }, secondsToSleep * 1000);
-  }
-
-  function getAutoClose() {
-    const autoCloseItem = localStorage.getItem('autoclose');
-    if (autoCloseItem === 'on') return true;
-    if (autoCloseItem === 'off') return false;
-    setAutoClose(autoClose ? 'on' : 'off');
-    return autoClose;
-  }
-
-  function setAutoClose(val) {
-    localStorage.setItem('autoclose', val);
-    autoClose = getAutoClose();
-    if (autoClose) prepareForSleep();
-    else clearTimeout(autoCloseTimeoutId);
-  }
-
-  function autoCloseHandler(e: MouseEvent) {
-    setAutoClose(getAutoClose() ? 'off' : 'on');
-  }
-
-  function setSleepControls(state) {
-    gsap.to('#sleep-switch .toggle', {
-      x: state ? 0 : -10
+    gsap.to('.m1_cGroup', {
+      x: (i) => -dx * (i + 1) * 0.003,
+      y: (i) => -dy * (i + 1) * 0.003,
+      rotation: Math.random() * 0.2,
+      duration: 1.5
     });
   }
 
@@ -595,6 +460,70 @@
     }
   }
 
+  async function initHeaderSections() {
+    for (
+      let nodes = document.querySelectorAll('section[data-header-section]'), i = 0;
+      nodes.length > i;
+      i++
+    ) {
+      const sectionEl = nodes[i] as unknown as HTMLElement;
+      const id = parseInt(sectionEl.dataset.headerSection);
+
+      headerSections.put({
+        id,
+        element: sectionEl,
+        title: sectionEl.querySelector('.title')
+      });
+
+      await tick();
+
+      // We can now add Icon & track since they're now rendered
+      $headerSections.forEach((item, i) => {
+        const icon = document.getElementById(`icon-item-${item.id}`) as unknown as SVGGElement;
+        const track = icon.parentElement.querySelector('.track') as unknown as SVGPathElement;
+
+        item.icon = icon;
+        item.track = track;
+      });
+    }
+  }
+
+  function initMenuSections() {
+    for (
+      let nodes = document.querySelectorAll('section[data-section]'), i = 0;
+      nodes.length > i;
+      i++
+    ) {
+      const sectionEl = nodes[i] as unknown as HTMLElement;
+      const id = parseInt(sectionEl.dataset.section);
+
+      sections.put({
+        id,
+        element: sectionEl,
+        title: sectionEl.querySelector('.title')
+      });
+    }
+  }
+
+  function _splitText(section) {
+    section.split?.revert();
+    section.split = new SplitText(section.title, {
+      type: 'chars, lines',
+      charsClass: 'charTxt',
+      linesClass: 'lineTxt'
+    });
+
+    section.lines = [];
+    for (var lines = section.split.lines, n = 0; lines.length > n; n++) {
+      var i = lines[n].querySelectorAll('.charTxt');
+      gsap.set(i, {
+        y: '-100%'
+      });
+      section.lines.push(i);
+    }
+    section.lines.reverse();
+  }
+
   function showSingleText(section: Section) {
     const tl = gsap.timeline({
       defaults: {
@@ -602,7 +531,7 @@
       },
       onStart: () => {
         section.element.classList.add('active');
-        app.classList.add('playing');
+        appElement.classList.add('playing');
         selectedItemId = section.id;
         section.active = true;
       }
@@ -630,9 +559,12 @@
 
   function showText(section: Section) {
     let tl = gsap.timeline({
+      defaults: {
+        duration: .5
+      },
       onStart: () => {
         section.element.classList.add('active');
-        app.classList.add('playing');
+        appElement.classList.add('playing');
         selectedItemId = section.id;
         section.active = true;
       }
@@ -698,102 +630,56 @@
     return tl;
   }
 
-  function sleep() {
-    gsap
-      .timeline({
-        onStart: () => (inTransfer = true),
-        onComplete: () => {
-          inTransfer = false;
-          sleeping = true;
-        }
-      })
-      .add(() => {
-        const tl = gsap.timeline();
-        $headerSections.forEach((section, i) => {
-          tl.add(animateIcon(section, 'in'), i * .05)
-        });
-      });
-  }
-
-  function awaik() {
-    gsap
-      .timeline({
-        onStart: () => (inTransfer = true),
-        onComplete: () => {
-          inTransfer = false;
-          sleeping = false;
-        }
-      })
-      .add(() => {
-        const tl = gsap.timeline();
-        $headerSections.forEach((section, i) => {
-          tl.add(animateIcon(section, 'out'), i * .05)
-        });
-      });
-  }
-
-  function animateIcon(section: HeaderSection, dir?: 'in' | 'out') {
+  function animateIcon(section: HeaderSection, duration = 0.4) {
     const { track, icon } = section;
-    const trackId = track.getAttribute('href');
-    const rawPath = MotionPathPlugin.getRawPath(trackId);
-    MotionPathPlugin.cacheRawPathMeasurements(rawPath);
+    const image = icon?.querySelector('image');
+    if (image) {
+      const trackId = track.getAttribute('href');
+      const rawPath = MotionPathPlugin.getRawPath(trackId);
+      MotionPathPlugin.cacheRawPathMeasurements(rawPath);
 
-    const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, dir === 'in' ? 1 : 0, true);
-    const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, dir === 'in' ? 0 : 1, true);
+      const startPoint = MotionPathPlugin.getPositionOnPath(rawPath, 0, true);
+      const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1, true);
 
-    const duration = 1;
-    const tl = gsap
-      .timeline()
-      .fromTo(
-        icon,
-        {
-          x: startPoint.x,
-          y: startPoint.y,
-          xPercent: -50,
-          yPercent: -50,
-          transformOrigin: '50% 50%'
-        },
-        {
-          x: endPoint.x,
-          y: endPoint.y,
-          duration,
-          ease: 'elastic.out(1, 0.75)',
-        }, 0
-      )
-      .to(
-        icon,
-        {
-          opacity: dir === 'in' ? 0 : 1,
-          duration: dir === 'in' ? duration * .1 : duration,
-        }, 0 
-      );
-    return tl;
+      const tl = gsap
+        .timeline({})
+        .fromTo(
+          icon,
+          {
+            x: startPoint.x,
+            y: startPoint.y,
+            opacity: 0,
+            xPercent: -50,
+            yPercent: -50,
+            transformOrigin: '50% 50%'
+          },
+          {
+            x: endPoint.x,
+            y: endPoint.y,
+            opacity: 1,
+            duration,
+            ease: 'elastic.out(1, 0.75)'
+          }
+        )
+        .to(track, {
+          opacity: 1
+        });
+      return tl;
+    }
   }
 
   function animateHeader(id?: number) {
     if (typeof id === 'number') {
-      if (!interactive) return;
       const section = $headerSections.find((item) => item.id == id);
       return interactiveTl.add(removeText(), '>').add(showSingleText(section), '>.3');
     } else {
-      const tl = gsap.timeline({defaults: {duration: 1}});
+      const tl = gsap.timeline({ name: 'header-timeline' });
       $headerSections.forEach((section, i) => {
-        tl.add(animateIcon(section), i * 0.05)
-          .add(() => removeText())
-          .add(showText(section), '>.5')
-          .to(
-            section.icon,
-            {
-              scale: 1.4,
-              ease: 'power1.in',
-              yoyo: true,
-              repeat: 1,
-              duration: 0.4
-            },
-            '<.2'
-          );
+        tl.add(() => removeText(), '>')
+          .add(() => showText(section), '>')
+          .add(animateIcon(section), '>.5');
       });
-      return tl;
+      return tl.add(shake());
     }
   }
 
@@ -802,7 +688,7 @@
     return gsap
       .timeline()
       .add(removeText(), playhead)
-      .add(() => app.classList.remove('playing'))
+      .add(() => appElement.classList.remove('playing'))
       .add(() => (selectedItemId = undefined));
   }
 
@@ -836,9 +722,8 @@
   }
 
   function toggleIntro(intro) {
-    app.classList.toggle('app-intro', intro);
+    appElement.classList.toggle('app-intro', intro);
     toggleIntroBtns(intro);
-    isIntro = intro;
   }
 
   function skipIntroHandler(e) {
@@ -854,7 +739,7 @@
 
   const toggleIntroBtns = (show: boolean) =>
     gsap
-      .timeline()
+      .timeline({ onStart: () => {} })
       .set(skipIntroBtn, {
         opacity: show ? 1 : 0
       })
@@ -869,12 +754,8 @@
       }
     });
 
-    const getStartTl = () => gsap.timeline().from('#main1', { duration: 0.5, autoAlpha: 1 }, 0);
-    const getMainLogo = () =>
-      gsap.to('#main-logo', {
-        opacity: 1,
-        duration: 1
-      });
+    const getStartTl = () => gsap.timeline().from('#main1', { duration: 0.5, autoAlpha: 0 }, 0);
+
     const getCarsTl = () =>
       gsap
         .timeline({
@@ -925,14 +806,17 @@
             duration: 1.5
           },
           'move-image+=.7'
-        );
+        )
+        .to('#main-logo', {
+          opacity: 1,
+          duration: 1
+        });
 
     return (mainTl = gsap
       .timeline({
         onComplete: () => {
           toggleIntro(false);
           revertHeader();
-          prepareForSleep();
         }
       })
       .to('#stage', { opacity: 1, duration: 0.5 })
@@ -940,9 +824,21 @@
       .add('start')
       .add(() => toggleIntro(true))
       .add(getCarsTl())
-      .add(getMainLogo())
-      .add(animateHeader(), 'start+=5'));
+      .add(animateHeader(), 'start+=2'));
   }
+
+  const shake = () => {
+    return gsap.to('.item-3d.icon', {
+      stagger: {
+        each: 0.1,
+        amount: 0.5
+      },
+      scale: 1.1,
+      duration: 0.3,
+      yoyo: true,
+      repeat: 1
+    });
+  };
 
   function initBrandTimeline() {
     brandTl = gsap
@@ -1029,10 +925,6 @@
 <svg id="main1" class={activeDisplayMode} width="100%" height="100%" viewBox="-400 -300 800 600">
   <symbol>
     <defs>
-      <linearGradient id="grad_0" x1="50%" y1="50%" x2="50%" y2="100%">
-        <stop offset="10%" style="stop-color: var(--grd0-stop1); stop-opacity: 0.4" />
-        <stop offset="99%" style="stop-color: var(--grd0-stop2); stop-opacity: 0.1" />
-      </linearGradient>
       <linearGradient id="grad_1" x1="50%" y1="50%" x2="50%" y2="100%">
         <stop offset="10%" style="stop-color: var(--grd1-stop1); stop-opacity: 0.4" />
         <stop offset="99%" style="stop-color: var(--grd1-stop2); stop-opacity: 0.1" />
@@ -1053,18 +945,18 @@
         <stop offset="75%" style="stop-color: var(--white); stop-opacity: 0.2" />
         <stop offset="99%" style="stop-color: var(--white); stop-opacity: 0" />
       </linearGradient>
-      <path id="pImage1" d="M-1100,50 -500,100" />
+      <path id="pImage1" d="M-1100,50 -550,100" />
       <path id="pImage2" d="M400,0 100,0" />
       <path id="pImage3" d="M-230,50 -130,50" />
 
-      <path id="pIcon0" d="M0,-1 -160,80" />
-      <path id="pIcon1" d="M0,-1 -190,-20" />
-      <path id="pIcon2" d="M0,-1 -150,-120" />
-      <path id="pIcon3" d="M0,-1 -60,-190" />
-      <path id="pIcon4" d="M0,-1 60,-190" />
-      <path id="pIcon5" d="M0,-1 150,-120" />
-      <path id="pIcon6" d="M0,-1 190,-20" />
-      <path id="pIcon7" d="M0,-1 160,80" />
+      <path id="pIcon0" d="M0,-1 -290,90" />
+      <path id="pIcon1" d="M0,-1 -290,-30" />
+      <path id="pIcon2" d="M0,-1 -230,-140" />
+      <path id="pIcon3" d="M0,-1 -120,-230" />
+      <path id="pIcon4" d="M0,-1 120,-230" />
+      <path id="pIcon5" d="M0,-1 260,-140" />
+      <path id="pIcon6" d="M0,-1 320,-30" />
+      <path id="pIcon7" d="M0,-1 320,90" />
     </defs>
   </symbol>
 
@@ -1073,7 +965,7 @@
       <image id="image3" href={app_url.concat('mower.png')} />
     </g>
     <g class="main_imageGroup">
-      <image id="image1" href={app_url.concat('touran.png')} />
+      <image id="image1" href={app_url.concat('bmw1.png')} />
     </g>
     <g class="main_imageGroup">
       <image id="image2" href={app_url.concat('tractor.png')} />
@@ -1193,12 +1085,7 @@
         <g>
           <path class="track" {d} stroke="url(#grad_3)" stroke-width="0" />
           <g class="item-3d menu" data-id={id}>
-            <g
-              class="item-label button"
-              on:touchstart={mouseoverHandler}
-              on:mouseover={mouseoverHandler}
-              on:focus
-            >
+            <g class="item-label button" on:mouseover|stopPropagation={mouseoverHandler} on:focus>
               <rect
                 x=".5"
                 y=".5"
@@ -1215,12 +1102,7 @@
                 </tspan>
               </text>
             </g>
-            <g
-              class="menu-item"
-              on:touchstart={mouseoverHandler}
-              on:mouseover={mouseoverHandler}
-              on:focus
-            >
+            <g class="menu-item" on:mouseover|stopPropagation={mouseoverHandler} on:focus>
               <circle
                 class="menu-item-image-bg"
                 cx="0"
@@ -1240,110 +1122,84 @@
       <use id="icon" href="#logo-icon" />
       <use id="type" href="#logo-type" />
     </g>
-    {#each $headerSections as { id, href, link = ".", name, grad }, i}
+    {#each $headerSections as { id, href, y, name, grad }, i}
       <g class="m3_cGroup">
         <g>
           <use
             class="track"
             href={`#pIcon${id}`}
             stroke={`url(#${grad})`}
-            stroke-width="0"
+            stroke-width="1"
             style="opacity: 0;"
           />
-          <a
-            href={link}
-            class="item-3d"
+          <g
+            class="item-3d icon"
             id={`icon-item-${id}`}
             data-icon-id={id}
-            on:touchstart={mouseoverHandler}
-            on:mouseover={mouseoverHandler}
+            on:mouseover|stopPropagation={mouseoverHandler}
             on:focus
           >
-            <g class="item-label button" on:focus>
+            <g class="item-label button" y="0" on:focus>
               <rect
+                x=".5"
+                y=".5"
                 width="180"
                 height="41"
                 rx="22"
-                y="20"
                 fill="#000000e0"
                 stroke="#ffffffa8"
                 stroke-miterlimit="10"
               />
               <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
-                <tspan stroke-width="0" y="20" x="100" dy="23" style="font-size: .8em">
+                <tspan stroke-width="0" x="100" dy="23" style="font-size: .8em">
                   {name}
                 </tspan>
               </text>
             </g>
-            <circle
-              class="menu-item-image-bg"
-              cx="0"
-              cy="0"
-              r="40"
-              fill="none"
-              stroke="url(#grad_0)"
-              stroke-width="1"
-            />
-            <image class="icon-item-image" href={app_url.concat(href)} x="0" y="0" />
-          </a>
+            <g class="icon-item" on:focus>
+              <image class="icon-item-image" href={app_url.concat(href)} x="-30" y="0" />
+            </g>
+          </g>
         </g>
       </g>
     {/each}
   </g>
   <use id="loading-spinner" href="#spinner" stroke="#000" />
   <g id="skip-intro" class="item-label button intro" y="0" on:focus>
-    <g opacity=".4">
-      <rect
-        x=".5"
-        y=".5"
-        width="120"
-        height="31"
-        rx="15"
-        fill="#000000e0"
-        stroke="#ffffffa8"
-        stroke-width="1"
-        stroke-miterlimit="10"
-      />
-      <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
-        <tspan stroke-width="0" x="62" dy="17" style="font-size: .6em"> Intro überspringen </tspan>
-      </text>
-    </g>
-  </g>
-  <g id="replay-intro" class="item-label button intro" on:focus>
-    <g opacity=".4">
-      <circle cx="11.5" cy="11.5" r="11" fill="#fff" stroke="#000" stroke-miterlimit="10" />
-      <polygon
-        fill="#000"
-        points="7.16 11.38 7.16 5.5 12.25 8.44 17.34 11.38 12.25 14.32 7.16 17.26 7.16 11.38"
-      />
-      <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
-        <tspan stroke-width="0" x="12" dy="34" style="font-size: .5em"> Intro </tspan>
-      </text>
-    </g>
-  </g>
-  <g id="sleep-switch" opacity=".4">
-    <g>
-      <path
-        d="m6,11.5c-3.03,0-5.5-2.47-5.5-5.5S2.97.5,6,.5h11c3.03,0,5.5,2.47,5.5,5.5s-2.47,5.5-5.5,5.5H6Z"
-        fill="#fff"
-      />
-      <path
-        d="m17,1c2.76,0,5,2.24,5,5s-2.24,5-5,5H6c-2.76,0-5-2.24-5-5S3.24,1,6,1h11m0-1H6C2.7,0,0,2.7,0,6s2.7,6,6,6h11c3.3,0,6-2.7,6-6S20.3,0,17,0h0Z"
-      />
-    </g>
-    <rect fill="#000" class="toggle" x="12" y="1.5" width="9" height="9" rx="4.5" ry="4.5" />
-    <text class="svg-text" text-anchor="middle" fill="#aaa" alignment-baseline="central">
-      <tspan stroke-width="0" x="10" dy="25" style="font-size: .5em">
-        Menu autom. schliessen
-      </tspan>
+    <rect
+      x=".5"
+      y=".5"
+      width="120"
+      height="31"
+      rx="15"
+      fill="#000000e0"
+      stroke="#ffffffa8"
+      stroke-width="1"
+      stroke-miterlimit="10"
+    />
+    <text class="svg-text" text-anchor="middle" fill="#fff" alignment-baseline="central">
+      <tspan stroke-width="0" x="62" dy="19" style="font-size: .6em"> Intro überspringen </tspan>
     </text>
+  </g>
+  <g id="replay-intro" class="item-label button intro" y="0" on:focus>
+    <rect
+      x=".5"
+      y=".5"
+      width="30"
+      height="30"
+      rx="15"
+      fill="#000000e0"
+      stroke="#ffffffa8"
+      stroke-width="1"
+      stroke-miterlimit="10"
+    />
+    <polygon points="0 0 5.9 3.41 11.8 6.81 5.9 10.22 0 13.62 0 6.81 0 0" fill="#fff" style="transform: translate(11px, 9px)"/>
   </g>
 </svg>
 
 <style lang="scss">
   svg {
     position: absolute;
-    z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
@@ -1377,6 +1233,7 @@
       &.menu-open .menu-item circle {
         opacity: 0.8 !important;
       }
+      .icon-item,
       .menu-item {
         transition: opacity 0.3s ease-in-out;
         cursor: pointer;
@@ -1389,18 +1246,12 @@
           }
         }
       }
-      image {
-        cursor: pointer;
-      }
       .track {
         fill: none;
         stroke-width: 1;
         stroke-miterlimit: 10;
         stroke-linecap: round;
         opacity: 0.2;
-      }
-      .item-label {
-        display: none;
       }
     }
     &.closed .item-3d {
@@ -1419,7 +1270,8 @@
       width: 130px;
     }
     .icon-item-image {
-      width: 120px;
+      width: 80px;
+      pointer-events: none;
     }
     #logo {
       width: 75px;
@@ -1435,7 +1287,7 @@
       }
     }
     .main_imageGroup {
-      transition: all 1s ease-out;
+      transition: all 0.3s ease-out;
       opacity: 0.5;
       #image1 {
         width: 450px;
